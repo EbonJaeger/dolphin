@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/BurntSushi/toml"
 )
@@ -38,16 +39,23 @@ type MinecraftConfig struct {
 	LogFilePath     string
 }
 
+var filePath string
+
 // LoadConfig loads the configuration from disk.
-func LoadConfig() (RootConfig, error) {
+func LoadConfig(path string) (RootConfig, error) {
 	var conf = RootConfig{}
-	// Get our config file
-	path := filepath.Join("", "dolphin.conf")
-	if err := createFile(path); err != nil {
+	// Make sure our path ends in the name of the file
+	if !strings.HasSuffix(path, ".conf") {
+		path = filepath.Join(path, "dolphin.conf")
+	}
+	filePath = path
+	Log.Infof("Using configuration at '%s'\n", filePath)
+	// Create the file if it doesn't exist
+	if err := createFile(filePath); err != nil {
 		return conf, err
 	}
 	// Parse the file
-	if _, err := toml.DecodeFile(path, &conf); err != nil {
+	if _, err := toml.DecodeFile(filePath, &conf); err != nil {
 		return conf, err
 	}
 	return conf, nil
@@ -59,14 +67,13 @@ func SaveConfig(data interface{}) error {
 		buf     bytes.Buffer
 		saveErr error
 	)
-	path := filepath.Join("", "dolphin.conf")
 	// Create our buffer and encoder
 	writer := bufio.NewWriter(&buf)
 	encoder := toml.NewEncoder(writer)
 	// Encode the struct as TOML
-	if saveErr = encoder.Encode(data); saveErr != nil {
+	if saveErr = encoder.Encode(data); saveErr == nil {
 		// Write to the file
-		saveErr = ioutil.WriteFile(path, buf.Bytes(), 0644)
+		saveErr = ioutil.WriteFile(filePath, buf.Bytes(), 0644)
 	}
 	return saveErr
 }

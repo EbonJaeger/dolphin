@@ -56,7 +56,7 @@ func ParseLine(line string) MinecraftMessage {
 	}
 	// Check if the server just finished starting
 	if strings.HasPrefix(line, "Done (") {
-		// TODO: debug log
+		Log.Debugln("Matched server started message")
 		return MinecraftMessage{
 			Username: Config.Discord.BotName,
 			Message:  ":white_check_mark: Server has started",
@@ -64,7 +64,7 @@ func ParseLine(line string) MinecraftMessage {
 	}
 	// Check if the server is shutting down
 	if strings.HasPrefix(line, "Stopping the server") {
-		// TODO: debug log
+		Log.Debugln("Matched server shutting down message")
 		return MinecraftMessage{
 			Username: Config.Discord.BotName,
 			Message:  ":x: Server is shutting down",
