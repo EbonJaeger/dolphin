@@ -19,13 +19,12 @@ type RootConfig struct {
 
 // DiscordConfig holds all settings for the Discord side of the application.
 type DiscordConfig struct {
-	BotToken        string
-	BotName         string
-	ChannelID       string
-	MessageTemplate string
-	AllowMentions   bool
-	UseWebhooks     bool
-	WebhookID       string
+	BotToken      string
+	BotName       string
+	ChannelID     string
+	AllowMentions bool
+	UseWebhooks   bool
+	WebhookURL    string
 }
 
 // MinecraftConfig holds all settings for the Minecraft server side of the application.
@@ -82,13 +81,12 @@ func SaveConfig(data interface{}) error {
 func SetDefaults(config RootConfig) RootConfig {
 	if config.Discord == (DiscordConfig{}) {
 		config.Discord = DiscordConfig{
-			BotToken:        "",
-			BotName:         "Dolphin",
-			ChannelID:       "",
-			MessageTemplate: "`%username%`: %message%",
-			AllowMentions:   true,
-			UseWebhooks:     false,
-			WebhookID:       "",
+			BotToken:      "",
+			BotName:       "Dolphin",
+			ChannelID:     "",
+			AllowMentions: true,
+			UseWebhooks:   false,
+			WebhookURL:    "",
 		}
 	}
 	if config.Minecraft == (MinecraftConfig{}) {
