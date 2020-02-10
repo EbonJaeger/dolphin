@@ -22,7 +22,7 @@ rcon.password=<password>
 rcon.port=<1-65535>
 ```
 
-Place the downloaded or built binary where ever you want, and run it to generate the config.
+Place the downloaded or built binary where ever you want, and run it to generate the config. By default, the config is generated and looked for in `$HOME/.config/dolphin/dolphin.conf`. You can override this using the program's command flags.
 
 ## Usage
 ```
