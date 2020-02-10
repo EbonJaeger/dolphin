@@ -91,7 +91,7 @@ func (d *DiscordBot) onMessageCreate(s *discordgo.Session, e *discordgo.MessageC
 	// Ignore messages that aren't from the configured channel
 	if e.ChannelID == Config.Discord.ChannelID {
 		// Ignore messages from ourselves
-		if e.Author.ID != s.State.User.ID || e.WebhookID != "" {
+		if e.Author.ID != s.State.User.ID && e.Message.WebhookID == "" {
 			Log.Debugln("Received a message from Discord")
 			// Create RCON connection
 			host := Config.Minecraft.RconIP

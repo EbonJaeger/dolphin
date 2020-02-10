@@ -14,7 +14,7 @@ type packetType int32
 
 const (
 	packetTypeCommand packetType = 2
-	packetTypeAuth    packetType = 2
+	packetTypeAuth    packetType = 3
 	badLoginID        int32      = -1
 	maxPacketSize     int        = 1460
 )
@@ -68,6 +68,7 @@ func (c *Client) Authenticate() error {
 	if head.RequestID == badLoginID {
 		return fmt.Errorf("unable to authenticate: %s", string(resp))
 	}
+	c.authed = true
 	return nil
 }
 
