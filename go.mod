@@ -9,6 +9,6 @@ require (
 	github.com/gorilla/websocket v1.4.1 // indirect
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/nxadm/tail v1.4.4
-	golang.org/x/crypto v0.0.0-20200109152110-61a87790db17 // indirect
+	golang.org/x/crypto v0.0.0-20200210222208-86ce3cb69678 // indirect
 	golang.org/x/sys v0.0.0-20200202164722-d101bd2416d5 // indirect
 )
