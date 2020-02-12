@@ -54,14 +54,13 @@ func LoadConfig(path string) (RootConfig, error) {
 	if !strings.HasSuffix(path, ".conf") {
 		path = filepath.Join(path, "dolphin.conf")
 	}
-	filePath = path
-	Log.Infof("Using configuration at '%s'\n", filePath)
+	Log.Infof("Using configuration at '%s'\n", path)
 	// Create the file if it doesn't exist
-	if err := createFile(filePath); err != nil {
+	if err := createFile(path); err != nil {
 		return conf, err
 	}
 	// Parse the file
-	if _, err := toml.DecodeFile(filePath, &conf); err != nil {
+	if _, err := toml.DecodeFile(path, &conf); err != nil {
 		return conf, err
 	}
 	return conf, nil

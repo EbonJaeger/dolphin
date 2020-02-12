@@ -33,11 +33,14 @@ func NewDolphin(cliFlags Flags) {
 	Log.SetFormat(format.Partial)
 	// Get default config path if we weren't passed one from the CLI
 	configPath := cliFlags.Config
+	// Check if we were given a config path
 	if configPath == "" {
+		// Get the current user
 		user, err := user.Current()
 		if err != nil {
 			Log.Fatalf("Error while getting the current user: %s\n", err.Error())
 		}
+		// Get our default config directory
 		confDir := filepath.Join(user.HomeDir, ".config", "dolphin")
 		// Check if the directory exists
 		if _, dirErr := os.Stat(confDir); dirErr != nil {
@@ -50,6 +53,7 @@ func NewDolphin(cliFlags Flags) {
 				Log.Fatalf("Error getting config directory: %s\n", dirErr.Error())
 			}
 		}
+		// Set the config path to our default conf directory
 		configPath = confDir
 	}
 	// Load our config
@@ -64,7 +68,7 @@ func NewDolphin(cliFlags Flags) {
 			Log.Fatalf("Error trying to save config: %s\n", err.Error())
 		}
 	}
-	// Create our Discord client
+	// Create our Discord client and connect to Discord
 	Log.Infoln("Creating Discord session")
 	var discordErr error
 	discordBot, discordErr = NewDiscordBot()

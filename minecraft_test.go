@@ -4,6 +4,8 @@ import (
 	"testing"
 )
 
+var watcher = NewWatcher()
+
 func TestParseChatLine(t *testing.T) {
 	// Given
 	input := "[12:32:45] [Server thread/INFO]: <TestUser> Sending a chat message"
@@ -12,7 +14,7 @@ func TestParseChatLine(t *testing.T) {
 		Message:  "Sending a chat message",
 	}
 	// When
-	actual := ParseLine(input)
+	actual := watcher.ParseLine(input)
 	// Then
 	if actual.Username != expected.Username {
 		t.Errorf("Parsing chat line got incorrect username, got: %s, expected: %s", actual.Username, expected.Username)
@@ -31,7 +33,7 @@ func TestParseJoinLine(t *testing.T) {
 		Message:  "TestUser joined the game",
 	}
 	// When
-	actual := ParseLine(input)
+	actual := watcher.ParseLine(input)
 	// Then
 	if actual.Username != expected.Username {
 		t.Errorf("Parsing chat line got incorrect username, got: %s, expected: %s", actual.Username, expected.Username)
@@ -50,7 +52,7 @@ func TestParseLeaveLine(t *testing.T) {
 		Message:  "TestUser left the game",
 	}
 	// When
-	actual := ParseLine(input)
+	actual := watcher.ParseLine(input)
 	// Then
 	if actual.Username != expected.Username {
 		t.Errorf("Parsing chat line got incorrect username, got: %s, expected: %s", actual.Username, expected.Username)
@@ -69,7 +71,7 @@ func TestParseAdvancement1Line(t *testing.T) {
 		Message:  ":partying_face: TestUser has made the advancement [MonsterHunter]",
 	}
 	// When
-	actual := ParseLine(input)
+	actual := watcher.ParseLine(input)
 	// Then
 	if actual.Username != expected.Username {
 		t.Errorf("Parsing chat line got incorrect username, got: %s, expected: %s", actual.Username, expected.Username)
@@ -88,7 +90,7 @@ func TestParseAdvancement2Line(t *testing.T) {
 		Message:  ":partying_face: TestUser has completed the challenge [MonsterHunter]",
 	}
 	// When
-	actual := ParseLine(input)
+	actual := watcher.ParseLine(input)
 	// Then
 	if actual.Username != expected.Username {
 		t.Errorf("Parsing chat line got incorrect username, got: %s, expected: %s", actual.Username, expected.Username)
@@ -107,7 +109,7 @@ func TestParseServerStartLine(t *testing.T) {
 		Message:  ":white_check_mark: Server has started",
 	}
 	// When
-	actual := ParseLine(input)
+	actual := watcher.ParseLine(input)
 	// Then
 	if actual.Username != expected.Username {
 		t.Errorf("Parsing chat line got incorrect username, got: %s, expected: %s", actual.Username, expected.Username)
@@ -126,7 +128,7 @@ func TestParseServerStopLine(t *testing.T) {
 		Message:  ":x: Server is shutting down",
 	}
 	// When
-	actual := ParseLine(input)
+	actual := watcher.ParseLine(input)
 	// Then
 	if actual.Username != expected.Username {
 		t.Errorf("Parsing chat line got incorrect username, got: %s, expected: %s", actual.Username, expected.Username)

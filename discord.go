@@ -2,6 +2,7 @@ package dolphin
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"strings"
 
@@ -81,6 +82,13 @@ func (d *DiscordBot) onGuildCreate(s *discordgo.Session, e *discordgo.GuildCreat
 		Log.Warnf("Attempted to join Guild '%s', but it was unavailable\n", e.Guild.Name)
 		return
 	}
+	// Make sure we are only connected to one Guild
+	if d.guildID != "" {
+		Log.Errorln("Already connected to a guild! Aborting...")
+		d.Close()
+		os.Exit(1)
+	}
+	// Set our Guild ID
 	d.guildID = e.Guild.ID
 	Log.Infof("Connected to guild named '%s'\n", e.Guild.Name)
 }
@@ -124,12 +132,43 @@ func (d *DiscordBot) onMessageCreate(s *discordgo.Session, e *discordgo.MessageC
 	}
 }
 
-func (d *DiscordBot) formatMessage(m *MinecraftMessage) string {
-	// Insert Discord mentions
+// sendToDiscord sends a message from Minecraft to the configured
+// Discord channel.
+func (d *DiscordBot) sendToDiscord(m *MinecraftMessage) {
+	// Insert Discord mentions if configured and present
 	if Config.Discord.AllowMentions {
+		// Insert Discord mentions
 		m.Message = d.insertMentions(m.Message)
 	}
-	return fmt.Sprintf("**%s**: %s", m.Username, m.Message)
+	// Send the message to Discord either via webhook or normal channel message
+	if Config.Discord.Webhook.Enabled {
+		// Get the configured webhook
+		id, token := matchWebhookURL(Config.Discord.Webhook.URL)
+		if id == "" || token == "" {
+			Log.Warnln("Invalid or undefined Discord webhook URL")
+			return
+		}
+		// Attempt to get the webhook
+		webhook, err := d.session.WebhookWithToken(id, token)
+		if err != nil {
+			Log.Errorf("Error getting Discord webhook: %s\n", err.Error())
+			return
+		}
+		// Form our webhook params
+		params := d.setWebhookParams(m)
+		// Semd tp the webhook
+		Log.Debugf("Sending to webhook: id='%s', token='%s'\n", id, token)
+		if _, err := d.session.WebhookExecute(webhook.ID, token, false, params); err != nil {
+			Log.Errorf("Error sending data to Discord webhook: %s\n", err.Error())
+		}
+	} else {
+		// Format the message for Discord
+		formatted := fmt.Sprintf("**%s**: %s", m.Username, m.Message)
+		// Send to the configured Discord channel
+		if _, err := d.session.ChannelMessageSend(Config.Discord.ChannelID, formatted); err != nil {
+			Log.Errorf("Error sending a message to Discord: %s\n", err.Error())
+		}
+	}
 }
 
 // getNickname gets the nickname of a Discord user in a Guild.
@@ -150,7 +189,7 @@ func (d *DiscordBot) getNickname(id string) string {
 }
 
 // getUserFromName gets the Discord user from a mention or username. The username
-// can be only a partial username
+// can be only a partial username.
 func (d *DiscordBot) getUserFromName(text string) *discordgo.User {
 	var target *discordgo.User
 	// Look through all cached guild members in the state
@@ -176,6 +215,9 @@ func (d *DiscordBot) getUserFromName(text string) *discordgo.User {
 	return target
 }
 
+// insertMentions looks for potential Discord mentions in a Minecraft chat
+// message. If there are any, we will attempt to get the user being mentioned
+// to get their mention string to put into the chat message.
 func (d *DiscordBot) insertMentions(msg string) string {
 	// Split the message into words
 	words := strings.Split(msg, " ")
@@ -194,53 +236,25 @@ func (d *DiscordBot) insertMentions(msg string) string {
 	return msg
 }
 
-func (d *DiscordBot) sendToDiscord(msg *MinecraftMessage) {
-	if Config.Discord.Webhook.Enabled {
-		// Get the configured webhook
-		id, token := matchWebhookURL(Config.Discord.Webhook.URL)
-		if id == "" || token == "" {
-			Log.Warnln("Invalid or undefined Discord webhook URL")
-			return
-		}
-		// Attempt to get the webhook
-		webhook, err := d.session.WebhookWithToken(id, token)
-		if err != nil {
-			Log.Errorf("Error getting Discord webhook: %s\n", err.Error())
-			return
-		}
-		// Form our webhook params
-		params := d.setWebhookParams(msg)
-		// Semd tp the webhook
-		Log.Debugf("Sending to webhook: id='%s', token='%s'\n", id, token)
-		if _, err := d.session.WebhookExecute(webhook.ID, token, false, params); err != nil {
-			Log.Errorf("Error sending data to Discord webhook: %s\n", err.Error())
-		}
-	} else {
-		formatted := d.formatMessage(msg)
-		if _, err := d.session.ChannelMessageSend(Config.Discord.ChannelID, formatted); err != nil {
-			Log.Errorf("Error sending a message to Discord: %s\n", err.Error())
-		}
-	}
-}
-
 func matchWebhookURL(url string) (string, string) {
 	wm := webhookRegex.FindStringSubmatch(url)
+	// Make sure we have the correct number of parts (ID and token)
 	if len(wm) != 3 {
 		return "", ""
 	}
+	// Return the webhook ID and token
 	return wm[1], wm[2]
 }
 
+// setWebhookParams sets the avater, username, and message for a webhook request.
 func (d *DiscordBot) setWebhookParams(m *MinecraftMessage) *discordgo.WebhookParams {
-	if Config.Discord.AllowMentions {
-		// Insert Discord mentions
-		m.Message = d.insertMentions(m.Message)
-	}
 	// Get the avatar to use for this message
 	var avatarURL string
 	if m.Username == Config.Discord.BotName {
+		// Configured server avatar
 		avatarURL = Config.Discord.Webhook.AvatarURL
 	} else {
+		// Player's Minecraft head as the avatar
 		avatarURL = fmt.Sprintf("https://minotar.net/helm/%s/256.png", m.Username)
 	}
 	return &discordgo.WebhookParams{
