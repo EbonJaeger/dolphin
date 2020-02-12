@@ -41,7 +41,7 @@ func (w *MinecraftWatcher) Watch(c chan<- *MinecraftMessage) {
 				line := <-w.tail.Lines
 				if line != nil {
 					// Parse the line to see if it's a message we care about
-					if msg := parseLine(line.Text); msg != nil {
+					if msg := ParseLine(line.Text); msg != nil {
 						// Send the message through the channel
 						c <- msg
 					}
@@ -53,9 +53,9 @@ func (w *MinecraftWatcher) Watch(c chan<- *MinecraftMessage) {
 	}
 }
 
-// parseLine parses a log line for various types of messages and
+// ParseLine parses a log line for various types of messages and
 // returns a MinecraftMessage struct if it is a message we care about.
-func parseLine(line string) *MinecraftMessage {
+func ParseLine(line string) *MinecraftMessage {
 	// Trim the time and thread prefix
 	line = line[33:len(line)]
 	// Trim trailing whitespace
