@@ -14,6 +14,8 @@ type MinecraftWatcher struct {
 	tail *tail.Tail
 }
 
+var deathKeywords = []string{"shot", "pricked", "walked into a cactus", "roasted", "drowned", "kinetic", "blew up", "blown up", "killed", "hit the ground", "fell", "doomed", "squashed", "magic", "flames", "burned", "walked into fire", "burnt", "bang", "lava", "lightning", "danger", "slain", "fireballed", "stung", "starved", "suffocated", "squished", "poked", "imapled", "didn't want to live", "withered", "pummeled", "died", "slain"}
+
 // Close stops the tail process and cleans up inotify file watches.
 func (w *MinecraftWatcher) Close() error {
 	err := w.tail.Stop()
@@ -89,8 +91,17 @@ func ParseLine(line string) *MinecraftMessage {
 			Message:  fmt.Sprintf(":partying_face: %s", line),
 		}
 	}
-	// Check if the line is a player death
-	for _, word := range *Config.Minecraft.DeathKeywords {
+	// Check if the line is a vanilla death message
+	for _, word := range deathKeywords {
+		if strings.Contains(line, word) {
+			return &MinecraftMessage{
+				Username: Config.Discord.BotName,
+				Message:  fmt.Sprintf(":skull: %s", line),
+			}
+		}
+	}
+	// Check if the line is a custom death message
+	for _, word := range *Config.Minecraft.CustomDeathKeywords {
 		if strings.Contains(line, word) {
 			return &MinecraftMessage{
 				Username: Config.Discord.BotName,
