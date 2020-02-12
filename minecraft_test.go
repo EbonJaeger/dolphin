@@ -98,28 +98,6 @@ func TestParseAdvancement2Line(t *testing.T) {
 	}
 }
 
-func TestParseAdvancement3Line(t *testing.T) {
-	// Given
-	input := "[12:32:45] [Server thread/INFO]: TestUser has reached the goal [MonsterHunter]"
-	Config = SetDefaults(RootConfig{})
-	expected := &MinecraftMessage{
-		Username: "Dolphin",
-		Message:  ":partying_face: TestUser has reached the goal [MonsterHunter]",
-	}
-	// When
-	actual := ParseLine(input)
-	// Then
-	if actual.Username != expected.Username {
-		t.Errorf("Parsing chat line got incorrect username, got: %s, expected: %s", actual.Username, expected.Username)
-	}
-	if actual.Message != expected.Message {
-		t.Errorf("Parsing chat line got incorrect message, got: %s, expected: %s", actual.Message, expected.Message)
-	}
-}
-
-// TODO: Test all of the death messages
-// Use a for-loop to go through all of them
-
 func TestParseServerStartLine(t *testing.T) {
 	// Given
 	input := "[12:32:45] [Server thread/INFO]: Done (21.3242s)! For help, type \"help\""

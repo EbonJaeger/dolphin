@@ -2,6 +2,7 @@ package dolphin
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -30,6 +31,9 @@ func (w *MinecraftWatcher) Watch(c chan<- *MinecraftMessage) {
 			// Start tailing the file
 			var tailErr error
 			w.tail, tailErr = tail.TailFile(Config.Minecraft.LogFilePath, tail.Config{
+				Location: &tail.SeekInfo{
+					Whence: io.SeekEnd,
+				},
 				ReOpen: true,
 				Follow: true,
 			})
@@ -38,8 +42,7 @@ func (w *MinecraftWatcher) Watch(c chan<- *MinecraftMessage) {
 			}
 			for {
 				// Read line from the Tail channel
-				line := <-w.tail.Lines
-				if line != nil {
+				if line := <-w.tail.Lines; line != nil {
 					// Parse the line to see if it's a message we care about
 					if msg := ParseLine(line.Text); msg != nil {
 						// Send the message through the channel
