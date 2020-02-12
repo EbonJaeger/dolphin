@@ -23,6 +23,7 @@ type DiscordConfig struct {
 	BotName       string
 	ChannelID     string
 	AllowMentions bool
+	UseNick       bool
 	UseWebhooks   bool
 	WebhookURL    string
 }
@@ -85,6 +86,7 @@ func SetDefaults(config RootConfig) RootConfig {
 			BotName:       "Dolphin",
 			ChannelID:     "",
 			AllowMentions: true,
+			UseNick:       false,
 			UseWebhooks:   false,
 			WebhookURL:    "",
 		}

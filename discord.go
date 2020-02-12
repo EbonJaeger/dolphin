@@ -93,31 +93,33 @@ func (d *DiscordBot) onMessageCreate(s *discordgo.Session, e *discordgo.MessageC
 		// Ignore messages from ourselves
 		if e.Author.ID != s.State.User.ID && e.Message.WebhookID == "" {
 			Log.Debugln("Received a message from Discord")
+			// Get the name to use
+			var name string
+			if Config.Discord.UseNick {
+				name = d.getNickname(e.Author.ID)
+			} else {
+				name = e.Author.Username
+			}
+			// Format the command to send to Minecraft
+			cmd := fmt.Sprintf("tellraw @a %s", Config.Minecraft.TellrawTemplate)
+			cmd = strings.Replace(cmd, "%username%", name, -1)
+			cmd = strings.Replace(cmd, "%message%", e.Content, -1)
 			// Create RCON connection
-			host := Config.Minecraft.RconIP
-			port := Config.Minecraft.RconPort
-			password := Config.Minecraft.RconPassword
-			conn, err := rcon.Dial(host, port, password)
+			conn, err := rcon.Dial(Config.Minecraft.RconIP, Config.Minecraft.RconPort, Config.Minecraft.RconPassword)
 			if err != nil {
 				Log.Errorf("Error opening RCON connection: %s\n", err.Error())
 				return
 			}
+			defer conn.Close()
 			// Authenticate to RCON
 			if err = conn.Authenticate(); err != nil {
 				Log.Errorf("Error authenticating with RCON: %s\n", err.Error())
-				conn.Close()
 				return
 			}
-			// Format the command to send to Minecraft
-			cmd := fmt.Sprintf("tellraw @a %s", Config.Minecraft.TellrawTemplate)
-			cmd = strings.Replace(cmd, "%username%", e.Author.Username, -1)
-			cmd = strings.Replace(cmd, "%message%", e.Content, -1)
 			// Send the command to Minecraft
 			if _, err := conn.SendCommand(cmd); err != nil {
-				Log.Errorf("Error sending command to Minecraft: %s\n", err.Error())
+				Log.Errorf("Error sending command to RCON: %s\n", err.Error())
 			}
-			// Close the connection
-			conn.Close()
 		}
 	}
 }
@@ -128,6 +130,23 @@ func (d *DiscordBot) formatMessage(m *MinecraftMessage) string {
 		m.Message = d.insertMentions(m.Message)
 	}
 	return fmt.Sprintf("**%s**: %s", m.Username, m.Message)
+}
+
+// getNickname gets the nickname of a Discord user in a Guild.
+func (d *DiscordBot) getNickname(id string) string {
+	var m *discordgo.Member
+	// Look in the cached state for the Member
+	m, _ = d.session.State.Member(d.guildID, id)
+	// Check if we got it
+	if m == nil {
+		// Look up the member normally
+		m, _ = d.session.GuildMember(d.guildID, id)
+	}
+	// Make sure we do have a user
+	if m == nil {
+		return ""
+	}
+	return m.Nick
 }
 
 // getUserFromName gets the Discord user from a mention or username. The username
