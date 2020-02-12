@@ -195,10 +195,9 @@ func (d *DiscordBot) insertMentions(msg string) string {
 }
 
 func (d *DiscordBot) sendToDiscord(msg *MinecraftMessage) {
-	if Config.Discord.UseWebhooks {
+	if Config.Discord.Webhook.Enabled {
 		// Get the configured webhook
-		id, token := matchWebhookURL(Config.Discord.WebhookURL)
-		Log.Debugf("Sending to webhook: id='%s', token='%s'\n", id, token)
+		id, token := matchWebhookURL(Config.Discord.Webhook.URL)
 		if id == "" || token == "" {
 			Log.Warnln("Invalid or undefined Discord webhook URL")
 			return
@@ -212,6 +211,7 @@ func (d *DiscordBot) sendToDiscord(msg *MinecraftMessage) {
 		// Form our webhook params
 		params := d.setWebhookParams(msg)
 		// Semd tp the webhook
+		Log.Debugf("Sending to webhook: id='%s', token='%s'\n", id, token)
 		if _, err := d.session.WebhookExecute(webhook.ID, token, false, params); err != nil {
 			Log.Errorf("Error sending data to Discord webhook: %s\n", err.Error())
 		}
@@ -236,11 +236,10 @@ func (d *DiscordBot) setWebhookParams(m *MinecraftMessage) *discordgo.WebhookPar
 		// Insert Discord mentions
 		m.Message = d.insertMentions(m.Message)
 	}
-	// Get the avatar for this user
+	// Get the avatar to use for this message
 	var avatarURL string
-	// Check if the message is from a player, or the server
 	if m.Username == Config.Discord.BotName {
-		avatarURL = "https://cdn6.aptoide.com/imgs/8/e/d/8ede957333544a11f75df4518b501bdb_icon.png?w=256"
+		avatarURL = Config.Discord.Webhook.AvatarURL
 	} else {
 		avatarURL = fmt.Sprintf("https://minotar.net/helm/%s/256.png", m.Username)
 	}
