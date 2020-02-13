@@ -33,7 +33,7 @@ Using a Discord webhook allows for much nicer messages to the Discord channel fr
 
 ## Usage
 ```
-./dolphin [OPTIONS]
+./mcdolphin [OPTIONS]
 ```
 Options:
 ```
