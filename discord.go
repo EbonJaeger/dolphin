@@ -251,8 +251,8 @@ func (d *DiscordBot) setWebhookParams(m *MinecraftMessage) *discordgo.WebhookPar
 	// Get the avatar to use for this message
 	var avatarURL string
 	if m.Username == Config.Discord.BotName {
-		// Configured server avatar
-		avatarURL = Config.Discord.Webhook.AvatarURL
+		// Use the bot's avatar
+		avatarURL = d.session.State.User.AvatarURL("256")
 	} else {
 		// Player's Minecraft head as the avatar
 		avatarURL = fmt.Sprintf("https://minotar.net/helm/%s/256.png", m.Username)

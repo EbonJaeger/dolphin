@@ -29,9 +29,8 @@ type DiscordConfig struct {
 
 // WebhookConfig holds settings for using Discord webhooks to send messages.
 type WebhookConfig struct {
-	Enabled   bool
-	URL       string
-	AvatarURL string
+	Enabled bool
+	URL     string
 }
 
 // MinecraftConfig holds all settings for the Minecraft server side of the application.
@@ -93,9 +92,8 @@ func SetDefaults(config RootConfig) RootConfig {
 			AllowMentions: true,
 			UseNick:       false,
 			Webhook: WebhookConfig{
-				Enabled:   false,
-				URL:       "",
-				AvatarURL: "https://cdn6.aptoide.com/imgs/8/e/d/8ede957333544a11f75df4518b501bdb_icon.png?w=256",
+				Enabled: false,
+				URL:     "",
 			},
 		}
 	}
