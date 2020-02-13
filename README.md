@@ -24,6 +24,13 @@ rcon.port=<1-65535>
 
 Place the downloaded or built binary where ever you want, and run it to generate the config. By default, the config is generated and looked for in `$HOME/.config/dolphin/dolphin.conf`. You can override this using the program's command flags.
 
+### Using Discord Webhooks
+Using a Discord webhook allows for much nicer messages to the Discord channel from Minecraft, such as using a different avatar for each Minecraft user and each message using their name. Setting it up is easy:
+
+1) In Discord, go to your server settings, go to Webhooks, and create a new webhook for the channel you wish to use.
+
+2) Copy the Webhook URL shown, and paste it in your Dolphin config, and enable using webhooks. Start Dolphin and that's it, you're done! :D
+
 ## Usage
 ```
 ./dolphin [OPTIONS]
