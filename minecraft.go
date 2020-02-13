@@ -11,18 +11,20 @@ import (
 
 // MinecraftWatcher watches for log lines from a Minecraft server.
 type MinecraftWatcher struct {
+	botName       string
 	deathKeywords []string
 	tail          *tail.Tail
 }
 
 // NewWatcher creates a new watcher with all of the Minecraft death message keywords.
-func NewWatcher() *MinecraftWatcher {
+func NewWatcher(botName string) *MinecraftWatcher {
 	var deathKeywords = []string{"shot", "pricked", "walked into a cactus", "roasted", "drowned", "kinetic", "blew up", "blown up", "killed", "hit the ground", "fell", "doomed", "squashed", "magic", "flames", "burned", "walked into fire", "burnt", "bang", "lava", "lightning", "danger", "slain", "fireballed", "stung", "starved", "suffocated", "squished", "poked", "imapled", "didn't want to live", "withered", "pummeled", "died", "slain"}
 	// Append any custom death keywords
 	if Config.Minecraft.CustomDeathKeywords != nil {
 		deathKeywords = append(deathKeywords, *Config.Minecraft.CustomDeathKeywords...)
 	}
 	return &MinecraftWatcher{
+		botName:       botName,
 		deathKeywords: deathKeywords,
 	}
 }
@@ -57,7 +59,7 @@ func (w *MinecraftWatcher) Watch(c chan<- *MinecraftMessage) {
 				// Read line from the Tail channel
 				if line := <-w.tail.Lines; line != nil {
 					// Parse the line to see if it's a message we care about
-					if msg := w.ParseLine(line.Text); msg != nil {
+					if msg := w.ParseLine(w.botName, line.Text); msg != nil {
 						// Send the message through the channel
 						c <- msg
 					}
@@ -71,7 +73,7 @@ func (w *MinecraftWatcher) Watch(c chan<- *MinecraftMessage) {
 
 // ParseLine parses a log line for various types of messages and
 // returns a MinecraftMessage struct if it is a message we care about.
-func (w *MinecraftWatcher) ParseLine(line string) *MinecraftMessage {
+func (w *MinecraftWatcher) ParseLine(botName string, line string) *MinecraftMessage {
 	// Trim the time and thread prefix
 	line = line[33:len(line)]
 	// Trim trailing whitespace
@@ -91,14 +93,14 @@ func (w *MinecraftWatcher) ParseLine(line string) *MinecraftMessage {
 	// Check for player join or leave
 	if strings.Contains(line, "joined the game") || strings.Contains(line, "left the game") {
 		return &MinecraftMessage{
-			Username: Config.Discord.BotName,
+			Username: botName,
 			Message:  line,
 		}
 	}
 	// Check if the line is an advancement message
 	if isAdvancement(line) {
 		return &MinecraftMessage{
-			Username: Config.Discord.BotName,
+			Username: botName,
 			Message:  fmt.Sprintf(":partying_face: %s", line),
 		}
 	}
@@ -106,7 +108,7 @@ func (w *MinecraftWatcher) ParseLine(line string) *MinecraftMessage {
 	for _, word := range w.deathKeywords {
 		if strings.Contains(line, word) {
 			return &MinecraftMessage{
-				Username: Config.Discord.BotName,
+				Username: botName,
 				Message:  fmt.Sprintf(":skull: %s", line),
 			}
 		}
@@ -114,14 +116,14 @@ func (w *MinecraftWatcher) ParseLine(line string) *MinecraftMessage {
 	// Check if the server just finished starting
 	if strings.HasPrefix(line, "Done (") {
 		return &MinecraftMessage{
-			Username: Config.Discord.BotName,
+			Username: botName,
 			Message:  ":white_check_mark: Server has started",
 		}
 	}
 	// Check if the server is shutting down
 	if strings.HasPrefix(line, "Stopping the server") {
 		return &MinecraftMessage{
-			Username: Config.Discord.BotName,
+			Username: botName,
 			Message:  ":x: Server is shutting down",
 		}
 	}

@@ -20,7 +20,6 @@ type RootConfig struct {
 // DiscordConfig holds all settings for the Discord side of the application.
 type DiscordConfig struct {
 	BotToken      string
-	BotName       string
 	ChannelID     string
 	AllowMentions bool
 	UseNick       bool
@@ -87,7 +86,6 @@ func SetDefaults(config RootConfig) RootConfig {
 	if config.Discord == (DiscordConfig{}) {
 		config.Discord = DiscordConfig{
 			BotToken:      "",
-			BotName:       "Dolphin",
 			ChannelID:     "",
 			AllowMentions: true,
 			UseNick:       false,

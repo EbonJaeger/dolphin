@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-var watcher = NewWatcher()
+var watcher = NewWatcher("TestBot")
 
 func TestParseChatLine(t *testing.T) {
 	// Given
@@ -14,7 +14,7 @@ func TestParseChatLine(t *testing.T) {
 		Message:  "Sending a chat message",
 	}
 	// When
-	actual := watcher.ParseLine(input)
+	actual := watcher.ParseLine("TestBot", input)
 	// Then
 	if actual.Username != expected.Username {
 		t.Errorf("Parsing chat line got incorrect username, got: %s, expected: %s", actual.Username, expected.Username)
@@ -27,13 +27,12 @@ func TestParseChatLine(t *testing.T) {
 func TestParseJoinLine(t *testing.T) {
 	// Given
 	input := "[12:32:45] [Server thread/INFO]: TestUser joined the game"
-	Config = SetDefaults(RootConfig{})
 	expected := &MinecraftMessage{
-		Username: "Dolphin",
+		Username: "TestBot",
 		Message:  "TestUser joined the game",
 	}
 	// When
-	actual := watcher.ParseLine(input)
+	actual := watcher.ParseLine("TestBot", input)
 	// Then
 	if actual.Username != expected.Username {
 		t.Errorf("Parsing chat line got incorrect username, got: %s, expected: %s", actual.Username, expected.Username)
@@ -46,13 +45,12 @@ func TestParseJoinLine(t *testing.T) {
 func TestParseLeaveLine(t *testing.T) {
 	// Given
 	input := "[12:32:45] [Server thread/INFO]: TestUser left the game"
-	Config = SetDefaults(RootConfig{})
 	expected := &MinecraftMessage{
-		Username: "Dolphin",
+		Username: "TestBot",
 		Message:  "TestUser left the game",
 	}
 	// When
-	actual := watcher.ParseLine(input)
+	actual := watcher.ParseLine("TestBot", input)
 	// Then
 	if actual.Username != expected.Username {
 		t.Errorf("Parsing chat line got incorrect username, got: %s, expected: %s", actual.Username, expected.Username)
@@ -65,13 +63,12 @@ func TestParseLeaveLine(t *testing.T) {
 func TestParseAdvancement1Line(t *testing.T) {
 	// Given
 	input := "[12:32:45] [Server thread/INFO]: TestUser has made the advancement [MonsterHunter]"
-	Config = SetDefaults(RootConfig{})
 	expected := &MinecraftMessage{
-		Username: "Dolphin",
+		Username: "TestBot",
 		Message:  ":partying_face: TestUser has made the advancement [MonsterHunter]",
 	}
 	// When
-	actual := watcher.ParseLine(input)
+	actual := watcher.ParseLine("TestBot", input)
 	// Then
 	if actual.Username != expected.Username {
 		t.Errorf("Parsing chat line got incorrect username, got: %s, expected: %s", actual.Username, expected.Username)
@@ -84,13 +81,12 @@ func TestParseAdvancement1Line(t *testing.T) {
 func TestParseAdvancement2Line(t *testing.T) {
 	// Given
 	input := "[12:32:45] [Server thread/INFO]: TestUser has completed the challenge [MonsterHunter]"
-	Config = SetDefaults(RootConfig{})
 	expected := &MinecraftMessage{
-		Username: "Dolphin",
+		Username: "TestBot",
 		Message:  ":partying_face: TestUser has completed the challenge [MonsterHunter]",
 	}
 	// When
-	actual := watcher.ParseLine(input)
+	actual := watcher.ParseLine("TestBot", input)
 	// Then
 	if actual.Username != expected.Username {
 		t.Errorf("Parsing chat line got incorrect username, got: %s, expected: %s", actual.Username, expected.Username)
@@ -103,13 +99,12 @@ func TestParseAdvancement2Line(t *testing.T) {
 func TestParseServerStartLine(t *testing.T) {
 	// Given
 	input := "[12:32:45] [Server thread/INFO]: Done (21.3242s)! For help, type \"help\""
-	Config = SetDefaults(RootConfig{})
 	expected := &MinecraftMessage{
-		Username: "Dolphin",
+		Username: "TestBot",
 		Message:  ":white_check_mark: Server has started",
 	}
 	// When
-	actual := watcher.ParseLine(input)
+	actual := watcher.ParseLine("TestBot", input)
 	// Then
 	if actual.Username != expected.Username {
 		t.Errorf("Parsing chat line got incorrect username, got: %s, expected: %s", actual.Username, expected.Username)
@@ -122,13 +117,12 @@ func TestParseServerStartLine(t *testing.T) {
 func TestParseServerStopLine(t *testing.T) {
 	// Given
 	input := "[12:32:45] [Server thread/INFO]: Stopping the server"
-	Config = SetDefaults(RootConfig{})
 	expected := &MinecraftMessage{
-		Username: "Dolphin",
+		Username: "TestBot",
 		Message:  ":x: Server is shutting down",
 	}
 	// When
-	actual := watcher.ParseLine(input)
+	actual := watcher.ParseLine("TestBot", input)
 	// Then
 	if actual.Username != expected.Username {
 		t.Errorf("Parsing chat line got incorrect username, got: %s, expected: %s", actual.Username, expected.Username)

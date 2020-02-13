@@ -22,9 +22,7 @@ type DiscordBot struct {
 // NewDiscordBot creates a new DiscordBot with a MinecraftWatcher and
 // connects to Discord.
 func NewDiscordBot() (*DiscordBot, error) {
-	bot := &DiscordBot{
-		watcher: &MinecraftWatcher{},
-	}
+	bot := &DiscordBot{}
 	var discordErr error
 	// Create Discord session
 	bot.session, discordErr = discordgo.New("Bot " + Config.Discord.BotToken)
@@ -38,6 +36,8 @@ func NewDiscordBot() (*DiscordBot, error) {
 	bot.session.AddHandler(bot.onMessageCreate)
 	// Connect to Discord websocket
 	discordErr = bot.session.Open()
+	// Create our Minecraft log watcher
+	bot.watcher = NewWatcher(bot.session.State.User.Username)
 	return bot, discordErr
 }
 
@@ -250,7 +250,7 @@ func matchWebhookURL(url string) (string, string) {
 func (d *DiscordBot) setWebhookParams(m *MinecraftMessage) *discordgo.WebhookParams {
 	// Get the avatar to use for this message
 	var avatarURL string
-	if m.Username == Config.Discord.BotName {
+	if m.Username == d.session.State.User.Username {
 		// Use the bot's avatar
 		avatarURL = d.session.State.User.AvatarURL("256")
 	} else {
