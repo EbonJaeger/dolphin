@@ -103,7 +103,7 @@ func (d *DiscordBot) onMessageCreate(s *discordgo.Session, e *discordgo.MessageC
 			Log.Debugln("Received a message from Discord")
 			// Get the name to use
 			var name string
-			if Config.Discord.UseNick {
+			if Config.Discord.UseMemberNicks {
 				name = d.getNickname(e.Author.ID)
 			} else {
 				name = e.Author.Username

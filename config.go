@@ -19,11 +19,11 @@ type RootConfig struct {
 
 // DiscordConfig holds all settings for the Discord side of the application.
 type DiscordConfig struct {
-	BotToken      string
-	ChannelID     string
-	AllowMentions bool
-	UseNick       bool
-	Webhook       WebhookConfig
+	BotToken       string
+	ChannelID      string
+	AllowMentions  bool
+	UseMemberNicks bool
+	Webhook        WebhookConfig
 }
 
 // WebhookConfig holds settings for using Discord webhooks to send messages.
@@ -85,10 +85,10 @@ func SaveConfig(data interface{}) error {
 func SetDefaults(config RootConfig) RootConfig {
 	if config.Discord == (DiscordConfig{}) {
 		config.Discord = DiscordConfig{
-			BotToken:      "",
-			ChannelID:     "",
-			AllowMentions: true,
-			UseNick:       false,
+			BotToken:       "",
+			ChannelID:      "",
+			AllowMentions:  true,
+			UseMemberNicks: false,
 			Webhook: WebhookConfig{
 				Enabled: false,
 				URL:     "",
