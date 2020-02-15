@@ -1,4 +1,4 @@
-module github.com/EbonJaeger/dolphin
+module gitlab.com/EbonJaeger/dolphin
 
 go 1.13
 

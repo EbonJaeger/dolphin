@@ -6,8 +6,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/EbonJaeger/dolphin/rcon"
 	"github.com/bwmarrin/discordgo"
+	"gitlab.com/EbonJaeger/dolphin/rcon"
 )
 
 var webhookRegex = regexp.MustCompile("https://discordapp.com/api/webhooks/(.*)/(.*)")

@@ -3,8 +3,8 @@ package main
 import (
 	"os"
 
-	"github.com/EbonJaeger/dolphin"
 	"github.com/jessevdk/go-flags"
+	"gitlab.com/EbonJaeger/dolphin"
 )
 
 func main() {
