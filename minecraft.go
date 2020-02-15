@@ -74,8 +74,8 @@ func (w *MinecraftWatcher) Watch(c chan<- *MinecraftMessage) {
 // ParseLine parses a log line for various types of messages and
 // returns a MinecraftMessage struct if it is a message we care about.
 func (w *MinecraftWatcher) ParseLine(botName string, line string) *MinecraftMessage {
-	// Trim the time and thread prefix
-	line = line[33:len(line)]
+	// Trim any line prefixes
+	line = trimPrefix(line)
 	// Trim trailing whitespace
 	line = strings.TrimSpace(line)
 	// Check if the line is a chat message
@@ -95,6 +95,14 @@ func (w *MinecraftWatcher) ParseLine(botName string, line string) *MinecraftMess
 		return &MinecraftMessage{
 			Username: botName,
 			Message:  line,
+		}
+	} else if strings.Contains(line, "logged in") {
+		// Non-vanilla join message
+		// Get the player's name
+		playerName := line[:strings.Index(line, "[")]
+		return &MinecraftMessage{
+			Username: botName,
+			Message:  fmt.Sprintf("%s joined the game", playerName),
 		}
 	}
 	// Check if the line is an advancement message
@@ -135,4 +143,22 @@ func isAdvancement(line string) bool {
 	return strings.Contains(line, "has made the advancement") ||
 		strings.Contains(line, "has completed the challenge") ||
 		strings.Contains(line, "has reached the goal")
+}
+
+// trimPrefix trims the timestamp and thread prefix from incoming messages
+// from the Minecraft server. We have to check for multiple prefixes because
+// different server softwares change logging output slightly.
+func trimPrefix(line string) string {
+	// Trim the time prefix
+	line = line[11:]
+	// Trim the thread prefix
+	if strings.Contains(line, "[Server thread/INFO]: ") {
+		// Line is either a server message or a vanilla chat message
+		line = line[22:]
+	} else if strings.Contains(line, "[Async Chat Thread") {
+		// Line is a chat message from a Spigot or Paper server
+		line = line[31:]
+	}
+	// Doesn't match anything we know of
+	return line
 }
