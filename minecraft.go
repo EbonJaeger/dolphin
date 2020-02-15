@@ -18,7 +18,7 @@ type MinecraftWatcher struct {
 
 // NewWatcher creates a new watcher with all of the Minecraft death message keywords.
 func NewWatcher(botName string) *MinecraftWatcher {
-	var deathKeywords = []string{"shot", "pricked", "walked into a cactus", "roasted", "drowned", "kinetic", "blew up", "blown up", "killed", "hit the ground", "fell", "doomed", "squashed", "magic", "flames", "burned", "walked into fire", "burnt", "bang", "lava", "lightning", "danger", "slain", "fireballed", "stung", "starved", "suffocated", "squished", "poked", "imapled", "didn't want to live", "withered", "pummeled", "died", "slain"}
+	var deathKeywords = []string{"shot", "pricked", "walked into a cactus", "roasted", "drowned", "kinetic", "blew up", "blown up", "killed", "hit the ground", "fell", "doomed", "squashed", "magic", "flames", "burned", "walked into fire", "burnt", "bang", "tried to swim in lava", "lightning", "floor was lava", "danger zone", "slain", "fireballed", "stung", "starved", "suffocated", "squished", "poked", "imapled", "didn't want to live", "withered", "pummeled", "died", "slain"}
 	// Append any custom death keywords
 	if Config.Minecraft.CustomDeathKeywords != nil {
 		deathKeywords = append(deathKeywords, *Config.Minecraft.CustomDeathKeywords...)
@@ -76,6 +76,9 @@ func (w *MinecraftWatcher) Watch(c chan<- *MinecraftMessage) {
 func (w *MinecraftWatcher) ParseLine(botName string, line string) *MinecraftMessage {
 	// Trim any line prefixes
 	line = trimPrefix(line)
+	if line == "" {
+		return nil
+	}
 	// Trim trailing whitespace
 	line = strings.TrimSpace(line)
 	// Check if the line is a chat message
@@ -147,18 +150,23 @@ func isAdvancement(line string) bool {
 
 // trimPrefix trims the timestamp and thread prefix from incoming messages
 // from the Minecraft server. We have to check for multiple prefixes because
-// different server softwares change logging output slightly.
+// different server softwares change logging output slightly. Returns an empty
+// string if nothing is matched.
 func trimPrefix(line string) string {
+	// Some server plugins may log abnormal lines
+	if !strings.HasPrefix(line, "[") || len(line) < 11 {
+		return ""
+	}
 	// Trim the time prefix
 	line = line[11:]
 	// Trim the thread prefix
 	if strings.Contains(line, "[Server thread/INFO]: ") {
 		// Line is either a server message or a vanilla chat message
-		line = line[22:]
+		return line[22:]
 	} else if strings.Contains(line, "[Async Chat Thread") {
 		// Line is a chat message from a Spigot or Paper server
-		line = line[31:]
+		return line[31:]
 	}
 	// Doesn't match anything we know of
-	return line
+	return ""
 }
