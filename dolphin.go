@@ -31,8 +31,10 @@ func NewDolphin(cliFlags Flags) {
 		Log.SetLevel(level.Info)
 	}
 	Log.SetFormat(format.Partial)
+
 	// Get default config path if we weren't passed one from the CLI
 	configPath := cliFlags.Config
+
 	// Check if we were given a config path
 	if configPath == "" {
 		// Get the current user
@@ -40,6 +42,7 @@ func NewDolphin(cliFlags Flags) {
 		if err != nil {
 			Log.Fatalf("Error while getting the current user: %s\n", err.Error())
 		}
+
 		// Get our default config directory
 		confDir := filepath.Join(user.HomeDir, ".config", "dolphin")
 		// Check if the directory exists
@@ -53,14 +56,17 @@ func NewDolphin(cliFlags Flags) {
 				Log.Fatalf("Error getting config directory: %s\n", dirErr.Error())
 			}
 		}
+
 		// Set the config path to our default conf directory
 		configPath = confDir
 	}
+
 	// Load our config
 	var readErr error
 	if Config, readErr = LoadConfig(configPath); readErr != nil {
 		Log.Fatalf("Error trying to load configuration: %s\n", readErr.Error())
 	}
+
 	// Make sure we have good defaults
 	if Config == (RootConfig{}) {
 		Config = SetDefaults(Config)
@@ -68,6 +74,7 @@ func NewDolphin(cliFlags Flags) {
 			Log.Fatalf("Error trying to save config: %s\n", err.Error())
 		}
 	}
+
 	// Create our Discord client and connect to Discord
 	Log.Infoln("Creating Discord session")
 	var discordErr error
@@ -76,14 +83,18 @@ func NewDolphin(cliFlags Flags) {
 		Log.Fatalf("Error creating Discord bot: %s\n", discordErr.Error())
 	}
 	Log.Goodln("Connected to Discord! Press CTRL+C to exit")
+
 	// Start watching Minecraft for messages
 	go discordBot.WaitForMessages()
+
 	// Wait until told to close
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
 	<-sc
+
 	// Newline to keep things pretty
 	Log.Println("")
+
 	// Close everything on exit
 	if err := discordBot.Close(); err != nil {
 		Log.Fatalf("Error while closing: %s\n", err.Error())

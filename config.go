@@ -53,14 +53,18 @@ func LoadConfig(path string) (RootConfig, error) {
 		path = filepath.Join(path, "dolphin.conf")
 	}
 	Log.Infof("Using configuration at '%s'\n", path)
+
 	// Create the file if it doesn't exist
 	if err := createFile(path); err != nil {
 		return conf, err
 	}
+
 	// Parse the file
 	if _, err := toml.DecodeFile(path, &conf); err != nil {
 		return conf, err
 	}
+
+	filePath = path
 	return conf, nil
 }
 
@@ -70,9 +74,11 @@ func SaveConfig(data interface{}) error {
 		buf     bytes.Buffer
 		saveErr error
 	)
+
 	// Create our buffer and encoder
 	writer := bufio.NewWriter(&buf)
 	encoder := toml.NewEncoder(writer)
+
 	// Encode the struct as TOML
 	if saveErr = encoder.Encode(data); saveErr == nil {
 		// Write to the file
