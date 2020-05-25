@@ -18,7 +18,7 @@ type MinecraftWatcher struct {
 
 // NewWatcher creates a new watcher with all of the Minecraft death message keywords.
 func NewWatcher(botName string) *MinecraftWatcher {
-	var deathKeywords = []string{"shot", "pricked", "walked into a cactus", "roasted", "drowned", "kinetic", "blew up", "blown up", "killed", "hit the ground", "fell", "doomed", "squashed", "magic", "flames", "burned", "walked into fire", "burnt", "bang", "tried to swim in lava", "lightning", "floor was lava", "danger zone", "slain", "fireballed", "stung", "starved", "suffocated", "squished", "poked", "imapled", "didn't want to live", "withered", "pummeled", "died", "slain"}
+	var deathKeywords = []string{" shot", " pricked", " walked into a cactus", " roasted", " drowned", " kinetic", " blew up", " blown up", " killed", " hit the ground", " fell", " doomed", " squashed", " magic", " flames", " burned", " walked into fire", " burnt", " bang", " tried to swim in lava", " lightning", "floor was lava", "danger zone", " slain", " fireballed", " stung", " starved", " suffocated", " squished", " poked", " imapled", "didn't want to live", " withered", " pummeled", " died", " slain"}
 	// Append any custom death keywords
 	if Config.Minecraft.CustomDeathKeywords != nil {
 		deathKeywords = append(deathKeywords, *Config.Minecraft.CustomDeathKeywords...)
