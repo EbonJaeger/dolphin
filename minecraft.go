@@ -99,14 +99,6 @@ func (w *MinecraftWatcher) ParseLine(botName string, line string) *MinecraftMess
 			Username: botName,
 			Message:  line,
 		}
-	} else if strings.Contains(line, "logged in") {
-		// Non-vanilla join message
-		// Get the player's name
-		playerName := line[:strings.Index(line, "[")]
-		return &MinecraftMessage{
-			Username: botName,
-			Message:  fmt.Sprintf("%s joined the game", playerName),
-		}
 	}
 	// Check if the line is an advancement message
 	if isAdvancement(line) {
