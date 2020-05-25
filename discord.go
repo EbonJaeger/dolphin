@@ -185,7 +185,12 @@ func (d *DiscordBot) getNickname(id string) string {
 	if m == nil {
 		return ""
 	}
-	return m.Nick
+
+	if m.Nick == "" {
+		return m.User.Username
+	} else {
+		return m.Nick
+	}
 }
 
 // getUserFromName gets the Discord user from a mention or username. The username
