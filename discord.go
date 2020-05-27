@@ -2,7 +2,6 @@ package dolphin
 
 import (
 	"fmt"
-	"os"
 	"regexp"
 	"strings"
 
@@ -82,13 +81,8 @@ func (d *DiscordBot) onGuildCreate(s *discordgo.Session, e *discordgo.GuildCreat
 		Log.Warnf("Attempted to join Guild '%s', but it was unavailable\n", e.Guild.Name)
 		return
 	}
-	// Make sure we are only connected to one Guild
-	if d.guildID != "" && d.guildID != e.Guild.ID {
-		Log.Errorln("Already connected to a guild! Aborting...")
-		d.Close()
-		os.Exit(1)
-	}
-	// Set our Guild ID
+
+	// Set our guild ID for later use
 	d.guildID = e.Guild.ID
 	Log.Infof("Connected to guild named '%s'\n", e.Guild.Name)
 }
