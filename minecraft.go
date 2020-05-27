@@ -109,7 +109,7 @@ func (w *MinecraftWatcher) ParseLine(botName string, line string) *MinecraftMess
 	}
 	// Check if the line is a death message
 	for _, word := range w.deathKeywords {
-		if strings.Contains(line, word) {
+		if strings.Contains(line, word) && line != "Found that the dragon has been killed in this world already." {
 			return &MinecraftMessage{
 				Username: botName,
 				Message:  fmt.Sprintf(":skull: %s", line),
