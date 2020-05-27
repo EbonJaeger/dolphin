@@ -83,7 +83,7 @@ func (d *DiscordBot) onGuildCreate(s *discordgo.Session, e *discordgo.GuildCreat
 		return
 	}
 	// Make sure we are only connected to one Guild
-	if d.guildID != "" {
+	if d.guildID != "" && d.guildID != e.Guild.ID {
 		Log.Errorln("Already connected to a guild! Aborting...")
 		d.Close()
 		os.Exit(1)
