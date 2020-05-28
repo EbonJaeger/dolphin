@@ -60,24 +60,6 @@ func TestParseVanillaJoinLine(t *testing.T) {
 	}
 }
 
-func TestParseNonVanillaJoinLine(t *testing.T) {
-	// Given
-	input := "[12:32:45] [Server thread/INFO]: TestUser[/192.168.0.2:51971] logged in with entity id 007 at ([world]0, 64.0, 0)"
-	expected := &MinecraftMessage{
-		Username: "TestBot",
-		Message:  "TestUser joined the game",
-	}
-	// When
-	actual := watcher.ParseLine("TestBot", input)
-	// Then
-	if actual.Username != expected.Username {
-		t.Errorf("Parsing chat line got incorrect username, got: %s, expected: %s", actual.Username, expected.Username)
-	}
-	if actual.Message != expected.Message {
-		t.Errorf("Parsing chat line got incorrect message, got: %s, expected: %s", actual.Message, expected.Message)
-	}
-}
-
 func TestParseLeaveLine(t *testing.T) {
 	// Given
 	input := "[12:32:45] [Server thread/INFO]: TestUser left the game"
