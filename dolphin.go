@@ -75,6 +75,20 @@ func NewDolphin(cliFlags Flags) {
 		}
 	}
 
+	// Check if a bot token is configured
+	if Config.Discord.BotToken == "" {
+		Log.Errorln("+-------------------------------------------------------------------------------------+")
+		Log.Errorln("| No Discord bot token is configured!                                                 |")
+		Log.Errorln("|                                                                                     |")
+		Log.Errorln("| Create a Discord bot here:                                                          |")
+		Log.Errorln("| https://discordapp.com/developers/applications/me                                   |")
+		Log.Errorln("|                                                                                     |")
+		Log.Errorln("| Copy the token into your config file, and add the bot to your server with this URL: |")
+		Log.Errorln("| https://discordapp.com/oauth2/authorize?client_id=<BOT CLIENT ID>&scope=bot         |")
+		Log.Errorln("+-------------------------------------------------------------------------------------+")
+		os.Exit(1)
+	}
+
 	// Create our Discord client and connect to Discord
 	Log.Infoln("Creating Discord session")
 	var discordErr error
