@@ -149,3 +149,16 @@ func TestParseServerStopLine(t *testing.T) {
 		t.Errorf("Parsing chat line got incorrect message, got: %s, expected: %s", actual.Message, expected.Message)
 	}
 }
+
+func TestIgnoreVillagerDeath(t *testing.T) {
+	// Given
+	input := "[12:32:45] [Server thread/INFO]: Villager axw['Villager'/85, l='world', x=-147.30, y=57.00, z=-190.70] died, message: 'Villager was squished too much'"
+
+	// When
+	result := watcher.ParseLine("TestBot", input)
+
+	// Then
+	if result != nil {
+		t.Errorf("Parsing line failed to ignore villager death message, got: %s", result)
+	}
+}

@@ -79,8 +79,15 @@ func (w *MinecraftWatcher) ParseLine(botName string, line string) *MinecraftMess
 	if line == "" {
 		return nil
 	}
+
 	// Trim trailing whitespace
 	line = strings.TrimSpace(line)
+
+	// Ignore villager death messages
+	if strings.HasPrefix(line, "Villager") && strings.Contains(line, "died, message:") {
+		return nil
+	}
+
 	// Check if the line is a chat message
 	if strings.HasPrefix(line, "<") {
 		// Split the message into parts
@@ -93,6 +100,7 @@ func (w *MinecraftWatcher) ParseLine(botName string, line string) *MinecraftMess
 			Message:  message,
 		}
 	}
+
 	// Check for player join or leave
 	if strings.Contains(line, "joined the game") || strings.Contains(line, "left the game") {
 		return &MinecraftMessage{
@@ -100,6 +108,7 @@ func (w *MinecraftWatcher) ParseLine(botName string, line string) *MinecraftMess
 			Message:  line,
 		}
 	}
+
 	// Check if the line is an advancement message
 	if isAdvancement(line) {
 		return &MinecraftMessage{
@@ -107,6 +116,7 @@ func (w *MinecraftWatcher) ParseLine(botName string, line string) *MinecraftMess
 			Message:  fmt.Sprintf(":partying_face: %s", line),
 		}
 	}
+
 	// Check if the line is a death message
 	for _, word := range w.deathKeywords {
 		if strings.Contains(line, word) && line != "Found that the dragon has been killed in this world already." {
@@ -116,6 +126,7 @@ func (w *MinecraftWatcher) ParseLine(botName string, line string) *MinecraftMess
 			}
 		}
 	}
+
 	// Check if the server just finished starting
 	if strings.HasPrefix(line, "Done (") {
 		return &MinecraftMessage{
@@ -123,6 +134,7 @@ func (w *MinecraftWatcher) ParseLine(botName string, line string) *MinecraftMess
 			Message:  ":white_check_mark: Server has started",
 		}
 	}
+
 	// Check if the server is shutting down
 	if strings.HasPrefix(line, "Stopping the server") {
 		return &MinecraftMessage{
@@ -130,6 +142,7 @@ func (w *MinecraftWatcher) ParseLine(botName string, line string) *MinecraftMess
 			Message:  ":x: Server is shutting down",
 		}
 	}
+
 	// Doesn't match anything we care about
 	return nil
 }
