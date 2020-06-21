@@ -1,4 +1,6 @@
 PKGNAME=mcdolphin
+MODULE=gitlab.com/EbonJaeger/dolphin
+VERSION="1.2.0"
 
 PREFIX?=/usr
 BINDIR?=$(DESTDIR)$(PREFIX)/bin
@@ -12,10 +14,9 @@ GOSRC+=go.mod go.sum
 mcdolphin: $(GOSRC)
 	$(GO) build $(GOFLAGS) \
 		-ldflags " \
-		-s \
-		-w" \
+		-X main.Version=$(VERSION)" \
 		-o $(PKGNAME) \
-		./cmd/mcdolphin/main.go
+		./cmd/mcdolphin
 
 all: mcdolphin
 
