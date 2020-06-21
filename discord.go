@@ -152,7 +152,9 @@ func (bot *DiscordBot) onMessageCreate(e *gateway.MessageCreateEvent) {
 			// Format the command to send to Minecraft
 			cmd := fmt.Sprintf("tellraw @a %s", Config.Minecraft.TellrawTemplate)
 			cmd = strings.Replace(cmd, "%username%", name, -1)
-			cmd = strings.Replace(cmd, "%message%", e.Content, -1)
+			// Escape quote characters
+			msg := strings.Replace(e.Content, "\"", "\\\"", -1)
+			cmd = strings.Replace(cmd, "%message%", msg, -1)
 
 			// Create RCON connection
 			conn, err := rcon.Dial(Config.Minecraft.RconIP, Config.Minecraft.RconPort, Config.Minecraft.RconPassword)
