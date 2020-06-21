@@ -2,10 +2,8 @@
 _build/*
 vendor/*
 
-# Compiled Object files, Static and Dynamic libs (Shared Objects)
-*.o
-*.a
-*.so
+# Compiled binaries
+mcdolphin
 
 # Folders
 _obj

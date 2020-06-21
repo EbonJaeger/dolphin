@@ -49,7 +49,7 @@ func NewDolphin(cliFlags Flags) {
 		if _, dirErr := os.Stat(confDir); dirErr != nil {
 			if os.IsNotExist(dirErr) {
 				// Attempt to create the directory
-				if createErr := os.Mkdir(confDir, 0755); err != nil {
+				if createErr := os.Mkdir(confDir, 0750); err != nil {
 					Log.Fatalf("Error creating default config directory: %s\n", createErr.Error())
 				}
 			} else {
@@ -103,7 +103,7 @@ func NewDolphin(cliFlags Flags) {
 
 	// Wait until told to close
 	sc := make(chan os.Signal, 1)
-	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
+	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-sc
 
 	// Newline to keep things pretty

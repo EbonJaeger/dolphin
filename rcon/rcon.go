@@ -121,11 +121,11 @@ func createPacket(t packetType, payload []byte) ([]byte, error) {
 	pad := [2]byte{}
 	length := int32(len(payload) + 10)
 	var buf bytes.Buffer
-	binary.Write(&buf, binary.LittleEndian, length)
-	binary.Write(&buf, binary.LittleEndian, int32(0))
-	binary.Write(&buf, binary.LittleEndian, t)
-	binary.Write(&buf, binary.LittleEndian, payload)
-	binary.Write(&buf, binary.LittleEndian, pad)
+	_ = binary.Write(&buf, binary.LittleEndian, length)
+	_ = binary.Write(&buf, binary.LittleEndian, int32(0))
+	_ = binary.Write(&buf, binary.LittleEndian, t)
+	_ = binary.Write(&buf, binary.LittleEndian, payload)
+	_ = binary.Write(&buf, binary.LittleEndian, pad)
 	// Make sure we're under the size limit
 	if buf.Len() >= maxPacketSize {
 		return nil, errors.New("packet size too lage")

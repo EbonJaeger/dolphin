@@ -7,7 +7,9 @@ Connects Discord and Minecraft servers without mods or plugins.
 --------
 
 ## Building
-Dolphin is a regular Go program using Go modules, so build it how you would any normal Go application.
+Dolphin has a Makefile to make building and installing easier.  
+
+To build the project, run `make`. To check the project and run tests, run `make check`.
 
 ## Installation
 Create a Discord bot [here](https://discordapp.com/developers/applications/me). Next, add the bot to your Discord server using this link, replacing the Client ID with your bot's ID:
@@ -43,6 +45,7 @@ Options:
 ```
 
 ## License
-Copyright © 2020 Evan Maddock (EbonJaeger)
+Copyright © 2020 Evan Maddock (EbonJaeger)  
+Makefile adapted from [usysconf](https://github.com/getsolus/usysconf), which is a Solus Project
 
 Dolphin is available under the terms of the Apache-2.0 license

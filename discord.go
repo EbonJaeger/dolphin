@@ -108,11 +108,15 @@ func (bot *DiscordBot) WaitForMessages() {
 // onReady sets the bot's Discord status.
 func (bot *DiscordBot) onReady(e *gateway.ReadyEvent) {
 	// Set the bot gaming status
-	bot.state.Gateway.UpdateStatus(gateway.UpdateStatusData{
+	err := bot.state.Gateway.UpdateStatus(gateway.UpdateStatusData{
 		Game: &discord.Activity{
 			Name: "Bridging the Minecraft/Discord gap",
 		},
 	})
+
+	if err != nil {
+		Log.Errorf("Unable to update Discord status: %s\n", err)
+	}
 }
 
 // onGuildCreate handles when the bot joins or connects to a Guild.
@@ -279,7 +283,7 @@ func (bot *DiscordBot) insertMentions(msg string) string {
 			user := bot.getUserFromName(word[1:])
 			if user != nil {
 				// Replace the word with the mention
-				strings.Replace(msg, word, user.Mention(), 1)
+				msg = strings.Replace(msg, word, user.Mention(), 1)
 			}
 		}
 	}

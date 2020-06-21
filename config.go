@@ -82,7 +82,7 @@ func SaveConfig(data interface{}) error {
 	// Encode the struct as TOML
 	if saveErr = encoder.Encode(data); saveErr == nil {
 		// Write to the file
-		saveErr = ioutil.WriteFile(filePath, buf.Bytes(), 0644)
+		saveErr = ioutil.WriteFile(filePath, buf.Bytes(), 0600)
 	}
 	return saveErr
 }
