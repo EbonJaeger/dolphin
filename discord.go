@@ -153,30 +153,23 @@ func (bot *DiscordBot) onMessageCreate(e *gateway.MessageCreateEvent) {
 				name = e.Author.Username
 			}
 
-			// Format the command to send to Minecraft
-			cmd := fmt.Sprintf("tellraw @a %s", Config.Minecraft.TellrawTemplate)
-			cmd = strings.Replace(cmd, "%username%", name, -1)
-			// Escape quote characters
-			msg := strings.Replace(e.Content, "\"", "\\\"", -1)
-			cmd = strings.Replace(cmd, "%message%", msg, -1)
+			content := formatMessage(bot.state, e.Message)
+			lines := strings.Split(content, "\n")
 
-			// Create RCON connection
-			conn, err := rcon.Dial(Config.Minecraft.RconIP, Config.Minecraft.RconPort, Config.Minecraft.RconPassword)
-			if err != nil {
-				Log.Errorf("Error opening RCON connection: %s\n", err.Error())
-				return
-			}
-			defer conn.Close()
+			// Send a separate message for each line
+			for i := 0; i < len(lines); i++ {
+				line := lines[i]
+				// Split long lines into additional messages
+				if len(line) > 100 {
+					lines = append(lines, "")
+					copy(lines[i+2:], lines[i+1:])
+					lines[i+1] = line[100:]
+					line = line[:100]
+				}
 
-			// Authenticate to RCON
-			if err = conn.Authenticate(); err != nil {
-				Log.Errorf("Error authenticating with RCON: %s\n", err.Error())
-				return
-			}
-
-			// Send the command to Minecraft
-			if _, err := conn.SendCommand(cmd); err != nil {
-				Log.Errorf("Error sending command to RCON: %s\n", err.Error())
+				if err := sendToMinecraft(line, name); err != nil {
+					Log.Errorf("Error sending command to RCON: %s\n", err)
+				}
 			}
 		}
 	}
@@ -319,4 +312,60 @@ func (bot *DiscordBot) setWebhookParams(m *MinecraftMessage) api.ExecuteWebhookD
 		Username:  m.Username,
 		AvatarURL: avatarURL,
 	}
+}
+
+func formatMessage(state *state.State, message discord.Message) string {
+	content := message.Content
+
+	// Replace mentions
+	for _, word := range strings.Split(content, " ") {
+		if strings.HasPrefix(word, "<#") && strings.HasSuffix(word, ">") {
+			// Get the ID from the mention string
+			id := word[2 : len(word)-1]
+			snowflake, _ := discord.ParseSnowflake(id)
+
+			channel, err := state.Channel(snowflake)
+			if err != nil {
+				Log.Warnf("Error while getting channel from Discord: %s\n", err)
+				continue
+			}
+
+			content = strings.Replace(content, fmt.Sprintf("<#%s>", id), fmt.Sprintf("#%s", channel.Name), -1)
+		}
+	}
+
+	for _, member := range message.Mentions {
+		content = strings.Replace(content, fmt.Sprintf("<@!%s>", member.ID), fmt.Sprintf("@%s", member.Username), -1)
+	}
+
+	// Escape quote characters
+	content = strings.Replace(content, "\"", "\\\"", -1)
+
+	return content
+}
+
+func sendToMinecraft(content, username string) error {
+	// Format command to send to the Minecraft server
+	command := fmt.Sprintf("tellraw @a %s", Config.Minecraft.TellrawTemplate)
+	command = strings.Replace(command, "%username%", username, -1)
+	command = strings.Replace(command, "%message%", content, -1)
+
+	// Create RCON connection
+	conn, err := rcon.Dial(Config.Minecraft.RconIP, Config.Minecraft.RconPort, Config.Minecraft.RconPassword)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	// Authenticate to RCON
+	if err = conn.Authenticate(); err != nil {
+		return err
+	}
+
+	// Send the command to Minecraft
+	if _, err := conn.SendCommand(command); err != nil {
+		return err
+	}
+
+	return nil
 }
