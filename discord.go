@@ -252,14 +252,12 @@ func (bot *DiscordBot) getNickname(id discord.Snowflake) string {
 
 // getUserFromName gets the Discord user from a mention or username. The username
 // can be only a partial username.
-func (bot *DiscordBot) getUserFromName(text string) *discord.User {
-	var target *discord.User
-
+func (bot *DiscordBot) getUserFromName(text string) (target *discord.User) {
 	// Look through all guild members in the state
 	members, _ := bot.state.Members(bot.guildID)
 	for _, u := range members {
-		// Check if the name matches or is a partial
-		if strings.Contains(strings.ToLower(u.User.Username), strings.ToLower(text)) {
+		// Check if the name matches, case-insensitive
+		if strings.EqualFold(u.User.Username, text) {
 			target = &u.User
 			break
 		}
