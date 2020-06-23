@@ -153,6 +153,17 @@ func (bot *DiscordBot) onMessageCreate(e *gateway.MessageCreateEvent) {
 				name = e.Author.Username
 			}
 
+			// Print the URL if message contains an attachement but no message content
+			if len(e.Message.Attachments) > 0 {
+				if len(e.Content) == 0 {
+					e.Content = e.Message.Attachments[0].URL
+					if err := sendToMinecraft(e.Content, name); err != nil {
+						Log.Errorf("Error sending command to RCON: %s\n", err)
+					}
+					return
+				}
+			}
+
 			content := formatMessage(bot.state, e.Message)
 			lines := strings.Split(content, "\n")
 
