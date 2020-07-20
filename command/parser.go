@@ -86,9 +86,9 @@ func (p *Parser) Parse(message discord.Message, state *state.State, config confi
 func newErrorEmbed(cmd DiscordCommand, err string) discord.Embed {
 	return discord.Embed{
 		Color:       ErrorColor,
-		Description: fmt.Sprintf("An error occurred while running the `%s` command.", cmd.Command),
+		Description: fmt.Sprintf(":no_entry: An error occurred while running the `%s` command.", cmd.Command),
 		Footer: &discord.EmbedFooter{
-			Text: err,
+			Text: fmt.Sprintf("err: %s", err),
 		},
 		Type: discord.NormalEmbed,
 	}
