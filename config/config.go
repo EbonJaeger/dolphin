@@ -1,4 +1,4 @@
-package dolphin
+package config
 
 import (
 	"bufio"
@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/BurntSushi/toml"
+	log "github.com/DataDrake/waterlog"
 )
 
 // RootConfig is our root config struct.
@@ -45,14 +46,14 @@ type MinecraftConfig struct {
 
 var filePath string
 
-// LoadConfig loads the configuration from disk.
-func LoadConfig(path string) (RootConfig, error) {
+// Load loads the configuration from disk.
+func Load(path string) (RootConfig, error) {
 	var conf = RootConfig{}
 	// Make sure our path ends in the name of the file
 	if !strings.HasSuffix(path, ".conf") {
 		path = filepath.Join(path, "dolphin.conf")
 	}
-	Log.Infof("Using configuration at '%s'\n", path)
+	log.Infof("Using configuration at '%s'\n", path)
 
 	// Create the file if it doesn't exist
 	if err := createFile(path); err != nil {

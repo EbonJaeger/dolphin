@@ -14,7 +14,7 @@ To build the project, run `make`. To check the project and run tests, run `make 
 ## Installation
 Create a Discord bot [here](https://discordapp.com/developers/applications/me). Next, add the bot to your Discord server using this link, replacing the Client ID with your bot's ID:
 ```
-https://discordapp.com/oauth2/authorize?client_id=<CLIENT_ID>&scope=bot
+https://discord.com/api/oauth2/authorize?client_id=<CLIENT_ID>&permissions=10240&scope=bot
 ```
 
 In your Minecraft server.properties, set the following options and restart the server:
