@@ -11,15 +11,18 @@ import (
 	"github.com/DataDrake/waterlog"
 	"github.com/DataDrake/waterlog/format"
 	"github.com/DataDrake/waterlog/level"
+	"gitlab.com/EbonJaeger/dolphin/command"
+	"gitlab.com/EbonJaeger/dolphin/config"
 )
 
 // Config is our struct that holds all configuration options.
-var Config RootConfig
+var Config config.RootConfig
 
 // Log is our Waterlog instance.
 var Log *waterlog.WaterLog
 
 var discordBot *DiscordBot
+var parser *command.Parser
 
 // NewDolphin initializes all the things and connects to Discord.
 func NewDolphin(cliFlags Flags) {
@@ -63,14 +66,14 @@ func NewDolphin(cliFlags Flags) {
 
 	// Load our config
 	var readErr error
-	if Config, readErr = LoadConfig(configPath); readErr != nil {
+	if Config, readErr = config.Load(configPath); readErr != nil {
 		Log.Fatalf("Error trying to load configuration: %s\n", readErr.Error())
 	}
 
 	// Make sure we have good defaults
-	if Config == (RootConfig{}) {
-		Config = SetDefaults(Config)
-		if err := SaveConfig(Config); err != nil {
+	if Config == (config.RootConfig{}) {
+		Config = config.SetDefaults(Config)
+		if err := config.SaveConfig(Config); err != nil {
 			Log.Fatalf("Error trying to save config: %s\n", err.Error())
 		}
 	}
@@ -96,6 +99,10 @@ func NewDolphin(cliFlags Flags) {
 	if discordErr != nil {
 		Log.Fatalf("Error creating Discord bot: %s\n", discordErr.Error())
 	}
+
+	// Create our command parser
+	parser = command.NewParser(Log)
+
 	Log.Goodln("Connected to Discord! Press CTRL+C to exit")
 
 	// Start watching Minecraft for messages
