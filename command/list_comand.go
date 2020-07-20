@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/diamondburned/arikawa/discord"
 	"github.com/diamondburned/arikawa/state"
@@ -13,26 +12,23 @@ import (
 )
 
 // ListPlayers sends an RCON command to the Minecraft server to list all online players.
-func ListPlayers(state *state.State, cmd DiscordCommand, config config.RootConfig) {
+func ListPlayers(state *state.State, cmd DiscordCommand, config config.RootConfig) error {
 	// Create RCON connection
 	conn, err := rcon.Dial(config.Minecraft.RconIP, config.Minecraft.RconPort, config.Minecraft.RconPassword)
 	if err != nil {
-		log.Errorf("Error opening RCON connection: %s\n", err)
-		return
+		return err
 	}
 	defer conn.Close()
 
 	// Authenticate to RCON
 	if err = conn.Authenticate(); err != nil {
-		log.Errorf("Error opening RCON connection: %s\n", err)
-		return
+		return err
 	}
 
 	// Send the command to Minecraft
 	resp, err := conn.SendCommand("minecraft:list")
 	if err != nil {
-		log.Errorf("Error sending RCON command: %s\n", err)
-		return
+		return err
 	}
 
 	embed := createListEmbed(strings.Split(resp, ":"))
@@ -40,13 +36,9 @@ func ListPlayers(state *state.State, cmd DiscordCommand, config config.RootConfi
 	message, _ := state.Client.SendEmbed(channel, embed)
 
 	// Remove the embed after 30 seconds
-	time.Sleep(30 * time.Second)
-	if err := state.Client.DeleteMessage(message.ChannelID, message.ID); err != nil {
-		log.Errorf("Error removing embedded message: %s\n", err)
-	}
-	if err := state.Client.DeleteMessage(message.ChannelID, cmd.MessageID); err != nil {
-		log.Errorf("Error removing command message: %s\n", err)
-	}
+	removeEmbed(state, channel, cmd.MessageID, message.ID)
+
+	return nil
 }
 
 func createListEmbed(resp []string) discord.Embed {

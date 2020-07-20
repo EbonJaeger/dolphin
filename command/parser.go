@@ -1,7 +1,9 @@
 package command
 
 import (
+	"fmt"
 	"strings"
+	"time"
 
 	"github.com/DataDrake/waterlog"
 	"github.com/diamondburned/arikawa/discord"
@@ -59,7 +61,46 @@ func (p *Parser) Parse(message discord.Message, state *state.State, config confi
 		// Only send to the correct handler
 		if handler.Name == cmd.Command {
 			log.Debugf("Running Discord bot command: %s\n", handler.Name)
-			go handler.Run(state, cmd, config)
+			if err := handler.Run(state, cmd, config); err != nil {
+				// Sanitize error from RCON
+				errorMessage := err.Error()
+				if strings.HasPrefix(errorMessage, "dial tcp") {
+					// This is so hacky and I hate it.
+					start := strings.Index(errorMessage, ":")
+					errorMessage = errorMessage[start+1:]
+					start = strings.Index(errorMessage, ":")
+					errorMessage = errorMessage[start+1:]
+				}
+
+				// Embed an error and log it
+				embed := newErrorEmbed(cmd, errorMessage)
+				channel, _ := discord.ParseSnowflake(config.Discord.ChannelID)
+				message, _ := state.Client.SendEmbed(channel, embed)
+				log.Errorf("Error running the '%s' command: %s\n", cmd.Command, err)
+				go removeEmbed(state, channel, cmd.MessageID, message.ID)
+			}
 		}
+	}
+}
+
+func newErrorEmbed(cmd DiscordCommand, err string) discord.Embed {
+	return discord.Embed{
+		Color:       ErrorColor,
+		Description: fmt.Sprintf("An error occurred while running the `%s` command.", cmd.Command),
+		Footer: &discord.EmbedFooter{
+			Text: err,
+		},
+		Type: discord.NormalEmbed,
+	}
+}
+
+func removeEmbed(state *state.State, channelID, commandID, embedID discord.Snowflake) {
+	// Remove the embed after 30 seconds
+	time.Sleep(30 * time.Second)
+	if err := state.Client.DeleteMessage(channelID, embedID); err != nil {
+		log.Errorf("Error removing embed: %s\n", err)
+	}
+	if err := state.Client.DeleteMessage(channelID, commandID); err != nil {
+		log.Errorf("Error removing command message: %s\n", err)
 	}
 }

@@ -145,7 +145,7 @@ func (bot *DiscordBot) onMessageCreate(e *gateway.MessageCreateEvent) {
 		if e.Author.ID != bot.id && e.Message.WebhookID.String() == "" {
 			// Check if the message is a bot command
 			if strings.HasPrefix(e.Message.Content, "!") {
-				parser.Parse(e.Message, bot.state, Config)
+				go parser.Parse(e.Message, bot.state, Config)
 				return
 			}
 

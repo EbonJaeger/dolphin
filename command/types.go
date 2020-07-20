@@ -15,7 +15,7 @@ const (
 // Handler is the interface the each Discord command handler implements.
 type Handler struct {
 	Name string
-	Run  func(state *state.State, cmd DiscordCommand, config config.RootConfig)
+	Run  func(state *state.State, cmd DiscordCommand, config config.RootConfig) error
 }
 
 // Cmd is the type that all command handlers are.
