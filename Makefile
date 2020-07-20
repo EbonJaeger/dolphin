@@ -1,6 +1,6 @@
 PKGNAME=mcdolphin
 MODULE=gitlab.com/EbonJaeger/dolphin
-VERSION="1.3.0"
+VERSION="1.4.0"
 
 PREFIX?=/usr
 BINDIR?=$(DESTDIR)$(PREFIX)/bin
