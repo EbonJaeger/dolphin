@@ -145,8 +145,12 @@ func (bot *DiscordBot) onMessageCreate(e *gateway.MessageCreateEvent) {
 		if e.Author.ID != bot.id && e.Message.WebhookID.String() == "" {
 			// Check if the message is a bot command
 			if strings.HasPrefix(e.Message.Content, "!") {
-				go parser.Parse(e.Message, bot.state, Config)
-				return
+				c := make(chan bool)
+				go parser.Parse(e.Message, bot.state, Config, c)
+				// Don't go any further if the command was found and ran
+				if <-c {
+					return
+				}
 			}
 
 			Log.Debugln("Received a message from Discord")

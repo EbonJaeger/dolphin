@@ -34,7 +34,7 @@ func NewParser(logger *waterlog.WaterLog) *Parser {
 
 // Parse will turn a Discord message into a DiscordCommand to be
 // passed on to a command handler.
-func (p *Parser) Parse(message discord.Message, state *state.State, config config.RootConfig) {
+func (p *Parser) Parse(message discord.Message, state *state.State, config config.RootConfig, resp chan bool) {
 	// Forget about the command prefix
 	raw := message.Content[1:]
 	parts := strings.Split(raw, " ")
@@ -61,6 +61,8 @@ func (p *Parser) Parse(message discord.Message, state *state.State, config confi
 		// Only send to the correct handler
 		if handler.Name == cmd.Command {
 			log.Debugf("Running Discord bot command: %s\n", handler.Name)
+			resp <- true
+
 			if err := handler.Run(state, cmd, config); err != nil {
 				// Sanitize error from RCON
 				errorMessage := err.Error()
