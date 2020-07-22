@@ -33,7 +33,10 @@ func ListPlayers(state *state.State, cmd DiscordCommand, config config.RootConfi
 
 	embed := createListEmbed(strings.Split(resp, ":"))
 	channel, _ := discord.ParseSnowflake(config.Discord.ChannelID)
-	message, _ := state.Client.SendEmbed(channel, embed)
+	message, err := state.Client.SendEmbed(channel, embed)
+	if err != nil {
+		return err
+	}
 
 	// Remove the embed after 30 seconds
 	removeEmbed(state, channel, cmd.MessageID, message.ID)

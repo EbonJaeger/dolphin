@@ -75,7 +75,13 @@ func (p *Parser) Parse(message discord.Message, state *state.State, config confi
 				// Embed an error and log it
 				embed := newErrorEmbed(cmd, errorMessage)
 				channel, _ := discord.ParseSnowflake(config.Discord.ChannelID)
-				message, _ := state.Client.SendEmbed(channel, embed)
+				message, sendError := state.Client.SendEmbed(channel, embed)
+				if sendError != nil {
+					log.Errorf("Error while trying to display another error: %s\n", sendError)
+					log.Errorf("The previous error was: %s\n", err)
+					return
+				}
+
 				log.Errorf("Error running the '%s' command: %s\n", cmd.Command, err)
 				go removeEmbed(state, channel, cmd.MessageID, message.ID)
 			}
