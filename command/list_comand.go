@@ -31,6 +31,11 @@ func ListPlayers(state *state.State, cmd DiscordCommand, config config.RootConfi
 		return err
 	}
 
+	// Vanilla servers dont support the 'minecraft:' command prefix
+	if strings.HasPrefix(resp, "Unknown or incomplete command") {
+		resp, err = conn.SendCommand("list")
+	}
+
 	embed := createListEmbed(strings.Split(resp, ":"))
 	channel, _ := discord.ParseSnowflake(config.Discord.ChannelID)
 	message, err := state.Client.SendEmbed(channel, embed)
