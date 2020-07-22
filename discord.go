@@ -146,7 +146,7 @@ func (bot *DiscordBot) onMessageCreate(e *gateway.MessageCreateEvent) {
 			// Check if the message is a bot command
 			if strings.HasPrefix(e.Message.Content, "!") {
 				c := make(chan bool)
-				go parser.Parse(e.Message, bot.state, Config, c)
+				go parser.Parse(e.Message, bot.state, c)
 				// Don't go any further if the command was found and ran
 				if <-c {
 					return

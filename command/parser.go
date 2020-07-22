@@ -11,11 +11,14 @@ import (
 	"gitlab.com/EbonJaeger/dolphin/config"
 )
 
-// log is our package-level Waterlog instance from the main package.
-var log *waterlog.WaterLog
+var (
+	conf config.RootConfig
+	log  *waterlog.WaterLog
+)
 
 // NewParser creates a new command parser with our commands registered.
-func NewParser(logger *waterlog.WaterLog) *Parser {
+func NewParser(configuration config.RootConfig, logger *waterlog.WaterLog) *Parser {
+	conf = configuration
 	log = logger
 
 	// Register our commands
@@ -27,14 +30,13 @@ func NewParser(logger *waterlog.WaterLog) *Parser {
 	})
 
 	return &Parser{
-		AwaitingResponse: make(map[discord.User]string),
-		Handlers:         handlers,
+		Handlers: handlers,
 	}
 }
 
 // Parse will turn a Discord message into a DiscordCommand to be
 // passed on to a command handler.
-func (p *Parser) Parse(message discord.Message, state *state.State, config config.RootConfig, resp chan bool) {
+func (p *Parser) Parse(message discord.Message, state *state.State, resp chan bool) {
 	// Forget about the command prefix
 	raw := message.Content[1:]
 	parts := strings.Split(raw, " ")
@@ -63,7 +65,7 @@ func (p *Parser) Parse(message discord.Message, state *state.State, config confi
 			log.Debugf("Running Discord bot command: %s\n", handler.Name)
 			resp <- true
 
-			if err := handler.Run(state, cmd, config); err != nil {
+			if err := handler.Run(state, cmd); err != nil {
 				// Sanitize error from RCON
 				errorMessage := err.Error()
 				if strings.HasPrefix(errorMessage, "dial tcp") {
@@ -76,7 +78,7 @@ func (p *Parser) Parse(message discord.Message, state *state.State, config confi
 
 				// Embed an error and log it
 				embed := newErrorEmbed(cmd, errorMessage)
-				channel, _ := discord.ParseSnowflake(config.Discord.ChannelID)
+				channel, _ := discord.ParseSnowflake(conf.Discord.ChannelID)
 				message, sendError := state.Client.SendEmbed(channel, embed)
 				if sendError != nil {
 					log.Errorf("Error while trying to display another error: %s\n", sendError)

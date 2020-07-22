@@ -3,7 +3,6 @@ package command
 import (
 	"github.com/diamondburned/arikawa/discord"
 	"github.com/diamondburned/arikawa/state"
-	"gitlab.com/EbonJaeger/dolphin/config"
 )
 
 // Color code for embed colors.
@@ -15,7 +14,7 @@ const (
 // Handler is the interface the each Discord command handler implements.
 type Handler struct {
 	Name string
-	Run  func(state *state.State, cmd DiscordCommand, config config.RootConfig) error
+	Run  func(state *state.State, cmd DiscordCommand) error
 }
 
 // Cmd is the type that all command handlers are.
@@ -33,6 +32,5 @@ type DiscordCommand struct {
 
 // Parser is a command parser that handles sending commands to the appropriate handler.
 type Parser struct {
-	AwaitingResponse map[discord.User]string
-	Handlers         []Handler
+	Handlers []Handler
 }

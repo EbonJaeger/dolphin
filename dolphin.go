@@ -101,7 +101,7 @@ func NewDolphin(cliFlags Flags) {
 	}
 
 	// Create our command parser
-	parser = command.NewParser(Log)
+	parser = command.NewParser(Config, Log)
 
 	Log.Goodln("Connected to Discord! Press CTRL+C to exit")
 

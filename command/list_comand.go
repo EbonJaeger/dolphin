@@ -7,14 +7,13 @@ import (
 
 	"github.com/diamondburned/arikawa/discord"
 	"github.com/diamondburned/arikawa/state"
-	"gitlab.com/EbonJaeger/dolphin/config"
 	"gitlab.com/EbonJaeger/dolphin/rcon"
 )
 
 // ListPlayers sends an RCON command to the Minecraft server to list all online players.
-func ListPlayers(state *state.State, cmd DiscordCommand, config config.RootConfig) error {
+func ListPlayers(state *state.State, cmd DiscordCommand) error {
 	// Create RCON connection
-	conn, err := rcon.Dial(config.Minecraft.RconIP, config.Minecraft.RconPort, config.Minecraft.RconPassword)
+	conn, err := rcon.Dial(conf.Minecraft.RconIP, conf.Minecraft.RconPort, conf.Minecraft.RconPassword)
 	if err != nil {
 		return err
 	}
@@ -40,7 +39,7 @@ func ListPlayers(state *state.State, cmd DiscordCommand, config config.RootConfi
 	}
 
 	embed := createListEmbed(strings.Split(resp, ":"))
-	channel, _ := discord.ParseSnowflake(config.Discord.ChannelID)
+	channel, _ := discord.ParseSnowflake(conf.Discord.ChannelID)
 	message, err := state.Client.SendEmbed(channel, embed)
 	if err != nil {
 		return err
