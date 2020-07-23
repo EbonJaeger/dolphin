@@ -12,8 +12,9 @@ import (
 )
 
 var (
-	conf config.RootConfig
-	log  *waterlog.WaterLog
+	conf     config.RootConfig
+	handlers []Handler
+	log      *waterlog.WaterLog
 )
 
 // NewParser creates a new command parser with our commands registered.
@@ -22,16 +23,19 @@ func NewParser(configuration config.RootConfig, logger *waterlog.WaterLog) *Pars
 	log = logger
 
 	// Register our commands
-	handlers := make([]Handler, 0)
+	handlers = append(handlers, Handler{
+		Name: "help",
+		Desc: "Show all available bot commands",
+		Run:  ShowHelp,
+	})
 
 	handlers = append(handlers, Handler{
 		Name: "list",
+		Desc: "List all online players",
 		Run:  ListPlayers,
 	})
 
-	return &Parser{
-		Handlers: handlers,
-	}
+	return &Parser{}
 }
 
 // Parse will turn a Discord message into a DiscordCommand to be
@@ -59,38 +63,42 @@ func (p *Parser) Parse(message discord.Message, state *state.State, resp chan bo
 	}
 
 	// Send the command to all handlers
-	for _, handler := range p.Handlers {
+	for _, handler := range handlers {
 		// Only send to the correct handler
 		if handler.Name == cmd.Command {
 			log.Debugf("Running Discord bot command: %s\n", handler.Name)
 			resp <- true
 
 			if err := handler.Run(state, cmd); err != nil {
-				// Sanitize error from RCON
-				errorMessage := err.Error()
-				if strings.HasPrefix(errorMessage, "dial tcp") {
-					// This is so hacky and I hate it.
-					start := strings.Index(errorMessage, ":")
-					errorMessage = errorMessage[start+1:]
-					start = strings.Index(errorMessage, ":")
-					errorMessage = errorMessage[start+1:]
-				}
-
-				// Embed an error and log it
-				embed := newErrorEmbed(cmd, errorMessage)
-				channel, _ := discord.ParseSnowflake(conf.Discord.ChannelID)
-				message, sendError := state.Client.SendEmbed(channel, embed)
-				if sendError != nil {
-					log.Errorf("Error while trying to display another error: %s\n", sendError)
-					log.Errorf("The previous error was: %s\n", err)
-					return
-				}
-
-				log.Errorf("Error running the '%s' command: %s\n", cmd.Command, err)
-				go removeEmbed(state, channel, cmd.MessageID, message.ID)
+				handleCommandError(state, cmd, err)
 			}
 		}
 	}
+}
+
+func handleCommandError(state *state.State, cmd DiscordCommand, err error) {
+	// Sanitize error from RCON
+	errorMessage := err.Error()
+	if strings.HasPrefix(errorMessage, "dial tcp") {
+		// This is so hacky and I hate it.
+		start := strings.Index(errorMessage, ":")
+		errorMessage = errorMessage[start+1:]
+		start = strings.Index(errorMessage, ":")
+		errorMessage = errorMessage[start+1:]
+	}
+
+	// Embed an error and log it
+	embed := newErrorEmbed(cmd, errorMessage)
+	channel, _ := discord.ParseSnowflake(conf.Discord.ChannelID)
+	message, sendError := state.Client.SendEmbed(channel, embed)
+	if sendError != nil {
+		log.Errorf("Error while trying to display another error: %s\n", sendError)
+		log.Errorf("The previous error was: %s\n", err)
+		return
+	}
+
+	log.Errorf("Error running the '%s' command: %s\n", cmd.Command, err)
+	removeEmbed(state, channel, cmd.MessageID, message.ID)
 }
 
 func newErrorEmbed(cmd DiscordCommand, err string) discord.Embed {

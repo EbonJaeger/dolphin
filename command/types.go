@@ -14,6 +14,7 @@ const (
 // Handler is the interface the each Discord command handler implements.
 type Handler struct {
 	Name string
+	Desc string
 	Run  func(state *state.State, cmd DiscordCommand) error
 }
 
@@ -31,6 +32,4 @@ type DiscordCommand struct {
 }
 
 // Parser is a command parser that handles sending commands to the appropriate handler.
-type Parser struct {
-	Handlers []Handler
-}
+type Parser struct{}
