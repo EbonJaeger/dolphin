@@ -37,7 +37,8 @@ func ShowHelp(state *state.State, cmd DiscordCommand) error {
 	if _, err := state.Client.SendEmbed(dm.ID, embed); err != nil {
 		// An error happened; Probably the sender doesn't allow DM's from randos.
 		// So, send it to the channel instead, and remove after 30 seconds.
-		channel, _ := discord.ParseSnowflake(conf.Discord.ChannelID)
+		snowflake, _ := discord.ParseSnowflake(conf.Discord.ChannelID)
+		channel := discord.ChannelID(snowflake)
 		message, err := state.Client.SendEmbed(channel, embed)
 		if err != nil {
 			return err

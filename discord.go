@@ -10,21 +10,11 @@ import (
 	"github.com/diamondburned/arikawa/discord"
 	"github.com/diamondburned/arikawa/gateway"
 	"github.com/diamondburned/arikawa/state"
+	"github.com/diamondburned/arikawa/webhook"
 	"gitlab.com/EbonJaeger/dolphin/rcon"
 )
 
 var webhookRegex = regexp.MustCompile("https://discordapp.com/api/webhooks/(.*)/(.*)")
-
-// DiscordBot holds our Discord session info and Minecraft log watcher.
-type DiscordBot struct {
-	avatarURL string
-	channel   discord.Snowflake
-	guildID   discord.Snowflake
-	id        discord.Snowflake
-	name      string
-	state     *state.State
-	watcher   *MinecraftWatcher
-}
 
 // NewDiscordBot creates a new DiscordBot with a MinecraftWatcher and
 // connects to discord.
@@ -61,10 +51,11 @@ func NewDiscordBot() (*DiscordBot, error) {
 	bot.avatarURL = self.AvatarURL()
 
 	if Config.Discord.ChannelID != "" {
-		bot.channel, discordErr = discord.ParseSnowflake(Config.Discord.ChannelID)
+		snowflake, discordErr := discord.ParseSnowflake(Config.Discord.ChannelID)
 		if discordErr != nil {
 			return nil, discordErr
 		}
+		bot.channel = discord.ChannelID(snowflake)
 	} else {
 		return nil, errors.New("no channel ID configured")
 	}
@@ -219,19 +210,14 @@ func (bot *DiscordBot) sendToDiscord(m *MinecraftMessage) {
 		if err != nil {
 			Log.Errorf("Error parsing Webhook Snowflake: %s\n", err.Error())
 		}
-
-		webhook, err := bot.state.WebhookWithToken(snowflake, token)
-		if err != nil {
-			Log.Errorf("Error getting Discord webhook: %s\n", err.Error())
-			return
-		}
+		webhookID := discord.WebhookID(snowflake)
 
 		// Form our webhook params
 		params := bot.setWebhookParams(m)
 
 		// Send to the webhook
 		Log.Debugf("Sending to webhook: id='%s', token='%s'\n", id, token)
-		if _, err := bot.state.ExecuteWebhook(webhook.ID, token, false, params); err != nil {
+		if err := webhook.Execute(webhookID, token, params); err != nil {
 			Log.Errorf("Error sending data to Discord webhook: %s\n", err.Error())
 		}
 	} else {
@@ -246,7 +232,7 @@ func (bot *DiscordBot) sendToDiscord(m *MinecraftMessage) {
 }
 
 // getNickname gets the nickname of a Discord user in a Guild.
-func (bot *DiscordBot) getNickname(id discord.Snowflake) string {
+func (bot *DiscordBot) getNickname(id discord.UserID) string {
 	var m *discord.Member
 
 	// Look in the cached state for the Member
@@ -344,8 +330,9 @@ func formatMessage(state *state.State, message discord.Message) string {
 			// Get the ID from the mention string
 			id := word[2 : len(word)-1]
 			snowflake, _ := discord.ParseSnowflake(id)
+			channelID := discord.ChannelID(snowflake)
 
-			channel, err := state.Channel(snowflake)
+			channel, err := state.Channel(channelID)
 			if err != nil {
 				Log.Warnf("Error while getting channel from Discord: %s\n", err)
 				continue

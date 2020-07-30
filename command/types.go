@@ -28,7 +28,7 @@ type DiscordCommand struct {
 	Sender    discord.User
 	Command   string
 	Args      []string
-	MessageID discord.Snowflake
+	MessageID discord.MessageID
 }
 
 // Parser is a command parser that handles sending commands to the appropriate handler.

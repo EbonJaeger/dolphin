@@ -89,7 +89,8 @@ func handleCommandError(state *state.State, cmd DiscordCommand, err error) {
 
 	// Embed an error and log it
 	embed := newErrorEmbed(cmd, errorMessage)
-	channel, _ := discord.ParseSnowflake(conf.Discord.ChannelID)
+	snowflake, _ := discord.ParseSnowflake(conf.Discord.ChannelID)
+	channel := discord.ChannelID(snowflake)
 	message, sendError := state.Client.SendEmbed(channel, embed)
 	if sendError != nil {
 		log.Errorf("Error while trying to display another error: %s\n", sendError)
@@ -112,7 +113,7 @@ func newErrorEmbed(cmd DiscordCommand, err string) discord.Embed {
 	}
 }
 
-func removeEmbed(state *state.State, channelID, commandID, embedID discord.Snowflake) {
+func removeEmbed(state *state.State, channelID discord.ChannelID, commandID, embedID discord.MessageID) {
 	// Remove the embed after 30 seconds
 	time.Sleep(30 * time.Second)
 	if err := state.Client.DeleteMessage(channelID, embedID); err != nil {
