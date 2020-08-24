@@ -4,12 +4,11 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
-	"github.com/BurntSushi/toml"
 	log "github.com/DataDrake/waterlog"
+	"github.com/pelletier/go-toml"
 )
 
 // RootConfig is our root config struct.
@@ -71,12 +70,12 @@ func CreateConfigFile(path string) error {
 			}
 
 			// Attempt to create the config file
-			if _, createErr := os.Create(path); createErr != nil {
+			if _, createErr := os.Create(configPath); createErr != nil {
 				return createErr
 			}
 
 			// Set the file permissions
-			if chmodErr := os.Chmod(path, 0644); chmodErr != nil {
+			if chmodErr := os.Chmod(configPath, 0644); chmodErr != nil {
 				return chmodErr
 			}
 		}
@@ -90,8 +89,16 @@ func Load() (RootConfig, error) {
 	var conf = RootConfig{}
 	log.Infof("Loading configuration from '%s'\n", configPath)
 
-	// Parse the file
-	if _, err := toml.DecodeFile(configPath, &conf); err != nil {
+	// Open the config file
+	file, err := os.Open(configPath)
+	if err != nil {
+		return conf, err
+	}
+	defer file.Close()
+
+	// Unmarshal the file into our struct
+	decoder := toml.NewDecoder(file)
+	if err := decoder.Decode(&conf); err != nil {
 		return conf, err
 	}
 
@@ -106,15 +113,26 @@ func SaveConfig(data interface{}) error {
 	)
 
 	// Create our buffer and encoder
-	writer := bufio.NewWriter(&buf)
+	file, err := os.Create(configPath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	writer := bufio.NewWriter(file)
 	encoder := toml.NewEncoder(writer)
 
 	// Encode the struct as TOML
-	if saveErr = encoder.Encode(data); saveErr == nil {
-		// Write to the file
-		saveErr = ioutil.WriteFile(configPath, buf.Bytes(), 0600)
+	if saveErr = encoder.Encode(data); saveErr != nil {
+		return saveErr
 	}
-	return saveErr
+
+	// Write to the file
+	if _, saveErr = writer.Write(buf.Bytes()); saveErr != nil {
+		return saveErr
+	}
+
+	return writer.Flush()
 }
 
 // SetDefaults sets sane config defaults and returns the resulting config.
