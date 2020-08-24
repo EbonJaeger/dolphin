@@ -7,12 +7,14 @@ BINDIR?=$(DESTDIR)$(PREFIX)/bin
 
 GO?=go
 GOFLAGS?=
+GOOS?=linux
+GOARCH?=amd64
 
 GOSRC!=find . -name '*.go'
 GOSRC+=go.mod go.sum
 
 mcdolphin: $(GOSRC)
-	$(GO) build $(GOFLAGS) \
+	GOOS=$(GOOS) GOARCH=$(GOARCH) $(GO) build $(GOFLAGS) \
 		-ldflags " \
 		-X main.Version=$(VERSION)" \
 		-o $(PKGNAME) \

@@ -3,10 +3,10 @@ package config
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/BurntSushi/toml"
 	log "github.com/DataDrake/waterlog"
@@ -44,28 +44,57 @@ type MinecraftConfig struct {
 	LogFilePath         string
 }
 
-var filePath string
+var configPath string
+
+// CreateConfigFile attempts to create the given config dir+file
+// if it doesn't yet exist.
+func CreateConfigFile(path string) error {
+	var dir string
+	var file string
+
+	// See if we're given a specific file to use
+	if filepath.Ext(path) != "" {
+		dir, file = filepath.Split(path)
+	} else {
+		dir = filepath.Clean(path)
+		file = "dolphin.conf"
+	}
+
+	configPath = filepath.Join(dir, file)
+
+	// Check if the path exists
+	if _, err := os.Stat(configPath); err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			// Attempt to create the config directory
+			if mkdirErr := os.Mkdir(dir, 0750); mkdirErr != nil {
+				return mkdirErr
+			}
+
+			// Attempt to create the config file
+			if _, createErr := os.Create(path); createErr != nil {
+				return createErr
+			}
+
+			// Set the file permissions
+			if chmodErr := os.Chmod(path, 0644); chmodErr != nil {
+				return chmodErr
+			}
+		}
+	}
+
+	return nil
+}
 
 // Load loads the configuration from disk.
-func Load(path string) (RootConfig, error) {
+func Load() (RootConfig, error) {
 	var conf = RootConfig{}
-	// Make sure our path ends in the name of the file
-	if !strings.HasSuffix(path, ".conf") {
-		path = filepath.Join(path, "dolphin.conf")
-	}
-	log.Infof("Using configuration at '%s'\n", path)
-
-	// Create the file if it doesn't exist
-	if err := createFile(path); err != nil {
-		return conf, err
-	}
+	log.Infof("Loading configuration from '%s'\n", configPath)
 
 	// Parse the file
-	if _, err := toml.DecodeFile(path, &conf); err != nil {
+	if _, err := toml.DecodeFile(configPath, &conf); err != nil {
 		return conf, err
 	}
 
-	filePath = path
 	return conf, nil
 }
 
@@ -83,7 +112,7 @@ func SaveConfig(data interface{}) error {
 	// Encode the struct as TOML
 	if saveErr = encoder.Encode(data); saveErr == nil {
 		// Write to the file
-		saveErr = ioutil.WriteFile(filePath, buf.Bytes(), 0600)
+		saveErr = ioutil.WriteFile(configPath, buf.Bytes(), 0600)
 	}
 	return saveErr
 }
@@ -114,26 +143,4 @@ func SetDefaults(config RootConfig) RootConfig {
 		}
 	}
 	return config
-}
-
-// createFile creates a blank file if it does not exist.
-func createFile(path string) error {
-	// Check if the file exists
-	if _, err := os.Stat(path); err != nil {
-		if os.IsNotExist(err) {
-			// Create the file
-			file, createErr := os.Create(path)
-			if createErr != nil {
-				return createErr
-			}
-			// Set the file permissions
-			if chmodErr := file.Chmod(0644); chmodErr != nil {
-				return chmodErr
-			}
-		} else {
-			// Other error
-			return err
-		}
-	}
-	return nil
 }

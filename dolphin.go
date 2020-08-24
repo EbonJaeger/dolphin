@@ -4,8 +4,6 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"os/user"
-	"path/filepath"
 	"syscall"
 
 	"github.com/DataDrake/waterlog"
@@ -40,33 +38,22 @@ func NewDolphin(cliFlags Flags) {
 
 	// Check if we were given a config path
 	if configPath == "" {
-		// Get the current user
-		user, err := user.Current()
+		// No path given, get the platform-specific config path
+		var err error
+		configPath, err = config.GetDefaultConfDir()
 		if err != nil {
-			Log.Fatalf("Error while getting the current user: %s\n", err.Error())
+			Log.Fatalf("Unable to get the default config location: %s\n", err)
 		}
+	}
 
-		// Get our default config directory
-		confDir := filepath.Join(user.HomeDir, ".config", "dolphin")
-		// Check if the directory exists
-		if _, dirErr := os.Stat(confDir); dirErr != nil {
-			if os.IsNotExist(dirErr) {
-				// Attempt to create the directory
-				if createErr := os.Mkdir(confDir, 0750); err != nil {
-					Log.Fatalf("Error creating default config directory: %s\n", createErr.Error())
-				}
-			} else {
-				Log.Fatalf("Error getting config directory: %s\n", dirErr.Error())
-			}
-		}
-
-		// Set the config path to our default conf directory
-		configPath = confDir
+	// Create the config file if it doesn't exist
+	if err := config.CreateConfigFile(configPath); err != nil {
+		Log.Fatalf("Error creating config file: %s\n", err)
 	}
 
 	// Load our config
 	var readErr error
-	if Config, readErr = config.Load(configPath); readErr != nil {
+	if Config, readErr = config.Load(); readErr != nil {
 		Log.Fatalf("Error trying to load configuration: %s\n", readErr.Error())
 	}
 
