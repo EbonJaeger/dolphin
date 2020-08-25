@@ -66,7 +66,10 @@ func CreateConfigFile(path string) error {
 		if errors.Is(err, os.ErrNotExist) {
 			// Attempt to create the config directory
 			if mkdirErr := os.Mkdir(dir, 0750); mkdirErr != nil {
-				return mkdirErr
+				// Continue if the dir already exists
+				if !errors.Is(mkdirErr, os.ErrExist) {
+					return mkdirErr
+				}
 			}
 
 			// Attempt to create the config file
