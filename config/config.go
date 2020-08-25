@@ -73,11 +73,6 @@ func CreateConfigFile(path string) error {
 			if _, createErr := os.Create(configPath); createErr != nil {
 				return createErr
 			}
-
-			// Set the file permissions
-			if chmodErr := os.Chmod(configPath, 0644); chmodErr != nil {
-				return chmodErr
-			}
 		}
 	}
 
@@ -90,7 +85,7 @@ func Load() (RootConfig, error) {
 	log.Infof("Loading configuration from '%s'\n", configPath)
 
 	// Open the config file
-	file, err := os.Open(configPath)
+	file, err := os.Open(filepath.Clean(configPath))
 	if err != nil {
 		return conf, err
 	}
