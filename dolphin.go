@@ -59,7 +59,7 @@ func NewDolphin(cliFlags Flags) {
 
 	// Make sure we have good defaults
 	if Config == (config.RootConfig{}) {
-		Config = config.SetDefaults(Config)
+		Config = config.SetDefaults()
 		if err := config.SaveConfig(Config); err != nil {
 			Log.Fatalf("Error trying to save config: %s\n", err.Error())
 		}

@@ -120,7 +120,7 @@ func SaveConfig(data interface{}) error {
 	defer file.Close()
 
 	writer := bufio.NewWriter(file)
-	encoder := toml.NewEncoder(writer)
+	encoder := toml.NewEncoder(writer).Order(toml.OrderPreserve)
 
 	// Encode the struct as TOML
 	if saveErr = encoder.Encode(data); saveErr != nil {
@@ -136,9 +136,9 @@ func SaveConfig(data interface{}) error {
 }
 
 // SetDefaults sets sane config defaults and returns the resulting config.
-func SetDefaults(config RootConfig) RootConfig {
-	if config.Discord == (DiscordConfig{}) {
-		config.Discord = DiscordConfig{
+func SetDefaults() RootConfig {
+	return RootConfig{
+		DiscordConfig{
 			BotToken:       "",
 			ChannelID:      "",
 			AllowMentions:  true,
@@ -147,10 +147,9 @@ func SetDefaults(config RootConfig) RootConfig {
 				Enabled: false,
 				URL:     "",
 			},
-		}
-	}
-	if config.Minecraft == (MinecraftConfig{}) {
-		config.Minecraft = MinecraftConfig{
+		},
+
+		MinecraftConfig{
 			RconIP:              "localhost",
 			RconPort:            25575,
 			RconPassword:        "",
@@ -158,7 +157,6 @@ func SetDefaults(config RootConfig) RootConfig {
 			CustomDeathKeywords: &[]string{},
 			UseLogFile:          true,
 			LogFilePath:         "/home/minecraft/server/logs/latest.log",
-		}
+		},
 	}
-	return config
 }
