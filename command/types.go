@@ -7,8 +7,10 @@ import (
 
 // Color code for embed colors.
 const (
-	ErrorColor = 0xcc0000
-	InfoColor  = 0x0099ff
+	ErrorColor   = 0xcc0000
+	InfoColor    = 0x0099ff
+	SuccessColor = 0x4CAF50
+	WarnColor    = 0xff9800
 )
 
 // Handler is the interface the each Discord command handler implements.
@@ -28,6 +30,8 @@ type DiscordCommand struct {
 	Sender    discord.User
 	Command   string
 	Args      []string
+	GuildID   discord.GuildID
+	ChannelID discord.ChannelID
 	MessageID discord.MessageID
 }
 

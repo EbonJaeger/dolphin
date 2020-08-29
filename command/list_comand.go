@@ -39,17 +39,7 @@ func ListPlayers(state *state.State, cmd DiscordCommand) error {
 	}
 
 	embed := createListEmbed(strings.Split(resp, ":"))
-	snowflake, _ := discord.ParseSnowflake(conf.Discord.ChannelID)
-	channel := discord.ChannelID(snowflake)
-	message, err := state.Client.SendEmbed(channel, embed)
-	if err != nil {
-		return err
-	}
-
-	// Remove the embed after 30 seconds
-	removeEmbed(state, channel, cmd.MessageID, message.ID)
-
-	return nil
+	return SendCommandEmbed(state, cmd, embed)
 }
 
 func createListEmbed(resp []string) discord.Embed {

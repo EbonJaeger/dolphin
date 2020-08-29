@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-var watcher = NewWatcher("TestBot")
+var watcher = NewWatcher("TestBot", make([]string, 0))
 
 func TestParseVanillaChatLine(t *testing.T) {
 	// Given

@@ -60,7 +60,7 @@ func NewDiscordBot() (*DiscordBot, error) {
 		return nil, errors.New("no channel ID configured")
 	}
 
-	bot.watcher = NewWatcher(self.Username)
+	bot.watcher = NewWatcher(self.Username, *Config.Minecraft.CustomDeathKeywords)
 
 	return bot, discordErr
 }
@@ -153,20 +153,20 @@ func (bot *DiscordBot) onGuildCreate(e *gateway.GuildCreateEvent) {
 // onMessageCreate handles messages that the bot receives, and sends them
 // to Minecraft via RCON.
 func (bot *DiscordBot) onMessageCreate(e *gateway.MessageCreateEvent) {
-	// Ignore messages that aren't from the configured channel
-	if e.ChannelID.String() == Config.Discord.ChannelID {
-		// Ignore messages from ourselves
-		if e.Author.ID != bot.id && e.Message.WebhookID.String() == "" {
-			// Check if the message is a bot command
-			if strings.HasPrefix(e.Message.Content, "!") {
-				c := make(chan bool)
-				go parser.Parse(e.Message, bot.state, c)
-				// Don't go any further if the command was found and ran
-				if <-c {
-					return
-				}
+	// Ignore messages from ourselves
+	if e.Author.ID != bot.id && e.Message.WebhookID.String() == "" {
+		// Check if the message is a bot command
+		if strings.HasPrefix(e.Message.Content, "!") {
+			c := make(chan bool)
+			go parser.Parse(e.Message, bot.state, c)
+			// Don't go any further if the command was found and ran
+			if <-c {
+				return
 			}
+		}
 
+		// Not a command, so ignore messages from other channels
+		if e.ChannelID.String() == Config.Discord.ChannelID {
 			Log.Debugln("Received a message from Discord")
 
 			// Get the name to use

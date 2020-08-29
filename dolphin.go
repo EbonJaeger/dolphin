@@ -14,7 +14,7 @@ import (
 )
 
 // Config is our struct that holds all configuration options.
-var Config config.RootConfig
+var Config *config.RootConfig
 
 // Log is our Waterlog instance.
 var Log *waterlog.WaterLog
@@ -52,18 +52,18 @@ func NewDolphin(cliFlags Flags) {
 	}
 
 	// Load our config
-	var readErr error
-	if Config, readErr = config.Load(); readErr != nil {
-		Log.Fatalf("Error trying to load configuration: %s\n", readErr.Error())
+	c, err := config.Load()
+	if err != nil {
+		Log.Fatalf("Error trying to load configuration: %s\n", err)
 	}
 
 	// Make sure we have good defaults
-	if Config == (config.RootConfig{}) {
-		Config = config.MergeDefaults(Config)
-		if err := config.SaveConfig(Config); err != nil {
-			Log.Fatalf("Error trying to save config: %s\n", err.Error())
-		}
+	c = config.MergeDefaults(c)
+	if err := config.SaveConfig(c); err != nil {
+		Log.Fatalf("Error trying to save config: %s\n", err.Error())
 	}
+
+	Config = &c
 
 	// Check if a bot token is configured
 	if Config.Discord.BotToken == "" {

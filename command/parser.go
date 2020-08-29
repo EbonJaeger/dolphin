@@ -3,7 +3,6 @@ package command
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/DataDrake/waterlog"
 	"github.com/diamondburned/arikawa/discord"
@@ -12,17 +11,23 @@ import (
 )
 
 var (
-	conf     config.RootConfig
+	conf     *config.RootConfig
 	handlers []Handler
 	log      *waterlog.WaterLog
 )
 
 // NewParser creates a new command parser with our commands registered.
-func NewParser(configuration config.RootConfig, logger *waterlog.WaterLog) *Parser {
+func NewParser(configuration *config.RootConfig, logger *waterlog.WaterLog) *Parser {
 	conf = configuration
 	log = logger
 
 	// Register our commands
+	handlers = append(handlers, Handler{
+		Name: "config",
+		Desc: "Configure certain bot settings",
+		Run:  ParseConfigCommand,
+	})
+
 	handlers = append(handlers, Handler{
 		Name: "help",
 		Desc: "Show all available bot commands",
@@ -59,6 +64,8 @@ func (p *Parser) Parse(message discord.Message, state *state.State, resp chan bo
 		message.Author,
 		parts[0],
 		args,
+		message.GuildID,
+		message.ChannelID,
 		message.ID,
 	}
 
@@ -88,7 +95,7 @@ func handleCommandError(state *state.State, cmd DiscordCommand, err error) {
 	}
 
 	// Embed an error and log it
-	embed := newErrorEmbed(cmd, errorMessage)
+	embed := CreateEmbed(ErrorColor, "Error", fmt.Sprintf(":no_entry: An error occurred while running the `%s` command.", cmd.Command), fmt.Sprintf("err: %s", errorMessage))
 	snowflake, _ := discord.ParseSnowflake(conf.Discord.ChannelID)
 	channel := discord.ChannelID(snowflake)
 	message, sendError := state.Client.SendEmbed(channel, embed)
@@ -99,27 +106,7 @@ func handleCommandError(state *state.State, cmd DiscordCommand, err error) {
 	}
 
 	log.Errorf("Error running the '%s' command: %s\n", cmd.Command, err)
-	removeEmbed(state, channel, cmd.MessageID, message.ID)
-}
-
-func newErrorEmbed(cmd DiscordCommand, err string) discord.Embed {
-	return discord.Embed{
-		Color:       ErrorColor,
-		Description: fmt.Sprintf(":no_entry: An error occurred while running the `%s` command.", cmd.Command),
-		Footer: &discord.EmbedFooter{
-			Text: fmt.Sprintf("err: %s", err),
-		},
-		Type: discord.NormalEmbed,
-	}
-}
-
-func removeEmbed(state *state.State, channelID discord.ChannelID, commandID, embedID discord.MessageID) {
-	// Remove the embed after 30 seconds
-	time.Sleep(30 * time.Second)
-	if err := state.Client.DeleteMessage(channelID, embedID); err != nil {
-		log.Errorf("Error removing embed: %s\n", err)
-	}
-	if err := state.Client.DeleteMessage(channelID, commandID); err != nil {
-		log.Errorf("Error removing command message: %s\n", err)
+	if err := RemoveEmbed(state, channel, cmd.MessageID, message.ID); err != nil {
+		log.Errorf("Error trying to remove an error embed: %s\n", err)
 	}
 }
