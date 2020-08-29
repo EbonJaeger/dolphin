@@ -100,7 +100,7 @@ func TestSaveAndLoadConfig(t *testing.T) {
 	}
 }
 
-func TestSetDefaults(t *testing.T) {
+func TestMergeEmptyConfig(t *testing.T) {
 	// given
 	expected := RootConfig{
 		DiscordConfig{
@@ -108,6 +108,77 @@ func TestSetDefaults(t *testing.T) {
 			ChannelID:      "",
 			AllowMentions:  true,
 			UseMemberNicks: false,
+			MessageOptions: MessageConfig{
+				ShowAdvancements: true,
+				ShowDeaths:       true,
+				ShowJoinsLeaves:  true,
+			},
+			Webhook: WebhookConfig{
+				Enabled: false,
+				URL:     "",
+			},
+		},
+
+		MinecraftConfig{
+			RconIP:              "localhost",
+			RconPort:            25575,
+			RconPassword:        "",
+			TellrawTemplate:     `[{"color": "white", "text": "<%username%> %message%"}]`,
+			CustomDeathKeywords: &[]string{},
+			UseLogFile:          true,
+			LogFilePath:         "/home/minecraft/server/logs/latest.log",
+		},
+	}
+
+	emptyConfig := RootConfig{}
+
+	// when
+	actual := MergeDefaults(emptyConfig)
+
+	// then
+	if !cmp.Equal(actual, expected) {
+		diff := cmp.Diff(actual, expected)
+		t.Errorf("Setting config defaults is incorrect: Diff: %s", diff)
+	}
+}
+
+func TestMigrateNoMessageConfig(t *testing.T) {
+	// given
+	expected := RootConfig{
+		DiscordConfig{
+			BotToken:       "",
+			ChannelID:      "",
+			AllowMentions:  true,
+			UseMemberNicks: false,
+			MessageOptions: MessageConfig{
+				ShowAdvancements: true,
+				ShowDeaths:       true,
+				ShowJoinsLeaves:  true,
+			},
+			Webhook: WebhookConfig{
+				Enabled: false,
+				URL:     "",
+			},
+		},
+
+		MinecraftConfig{
+			RconIP:              "localhost",
+			RconPort:            25575,
+			RconPassword:        "",
+			TellrawTemplate:     `[{"color": "white", "text": "<%username%> %message%"}]`,
+			CustomDeathKeywords: &[]string{},
+			UseLogFile:          true,
+			LogFilePath:         "/home/minecraft/server/logs/latest.log",
+		},
+	}
+
+	givenConfig := RootConfig{
+		DiscordConfig{
+			BotToken:       "",
+			ChannelID:      "",
+			AllowMentions:  true,
+			UseMemberNicks: false,
+			MessageOptions: MessageConfig{},
 			Webhook: WebhookConfig{
 				Enabled: false,
 				URL:     "",
@@ -126,7 +197,185 @@ func TestSetDefaults(t *testing.T) {
 	}
 
 	// when
-	actual := SetDefaults()
+	actual := MergeDefaults(givenConfig)
+
+	// then
+	if !cmp.Equal(actual, expected) {
+		diff := cmp.Diff(actual, expected)
+		t.Errorf("Setting config defaults is incorrect: Diff: %s", diff)
+	}
+}
+
+func TestMigrateNoWebhookConfig(t *testing.T) {
+	// given
+	expected := RootConfig{
+		DiscordConfig{
+			BotToken:       "",
+			ChannelID:      "",
+			AllowMentions:  true,
+			UseMemberNicks: false,
+			MessageOptions: MessageConfig{
+				ShowAdvancements: true,
+				ShowDeaths:       true,
+				ShowJoinsLeaves:  true,
+			},
+			Webhook: WebhookConfig{
+				Enabled: false,
+				URL:     "",
+			},
+		},
+
+		MinecraftConfig{
+			RconIP:              "localhost",
+			RconPort:            25575,
+			RconPassword:        "",
+			TellrawTemplate:     `[{"color": "white", "text": "<%username%> %message%"}]`,
+			CustomDeathKeywords: &[]string{},
+			UseLogFile:          true,
+			LogFilePath:         "/home/minecraft/server/logs/latest.log",
+		},
+	}
+
+	givenConfig := RootConfig{
+		DiscordConfig{
+			BotToken:       "",
+			ChannelID:      "",
+			AllowMentions:  true,
+			UseMemberNicks: false,
+			MessageOptions: MessageConfig{
+				ShowAdvancements: true,
+				ShowDeaths:       true,
+				ShowJoinsLeaves:  true,
+			},
+			Webhook: WebhookConfig{},
+		},
+
+		MinecraftConfig{
+			RconIP:              "localhost",
+			RconPort:            25575,
+			RconPassword:        "",
+			TellrawTemplate:     `[{"color": "white", "text": "<%username%> %message%"}]`,
+			CustomDeathKeywords: &[]string{},
+			UseLogFile:          true,
+			LogFilePath:         "/home/minecraft/server/logs/latest.log",
+		},
+	}
+
+	// when
+	actual := MergeDefaults(givenConfig)
+
+	// then
+	if !cmp.Equal(actual, expected) {
+		diff := cmp.Diff(actual, expected)
+		t.Errorf("Setting config defaults is incorrect: Diff: %s", diff)
+	}
+}
+
+func TestMigrateNoDiscordConfig(t *testing.T) {
+	// given
+	expected := RootConfig{
+		DiscordConfig{
+			BotToken:       "",
+			ChannelID:      "",
+			AllowMentions:  true,
+			UseMemberNicks: false,
+			MessageOptions: MessageConfig{
+				ShowAdvancements: true,
+				ShowDeaths:       true,
+				ShowJoinsLeaves:  true,
+			},
+			Webhook: WebhookConfig{
+				Enabled: false,
+				URL:     "",
+			},
+		},
+
+		MinecraftConfig{
+			RconIP:              "localhost",
+			RconPort:            25575,
+			RconPassword:        "",
+			TellrawTemplate:     `[{"color": "white", "text": "<%username%> %message%"}]`,
+			CustomDeathKeywords: &[]string{},
+			UseLogFile:          true,
+			LogFilePath:         "/home/minecraft/server/logs/latest.log",
+		},
+	}
+
+	givenConfig := RootConfig{
+		DiscordConfig{},
+
+		MinecraftConfig{
+			RconIP:              "localhost",
+			RconPort:            25575,
+			RconPassword:        "",
+			TellrawTemplate:     `[{"color": "white", "text": "<%username%> %message%"}]`,
+			CustomDeathKeywords: &[]string{},
+			UseLogFile:          true,
+			LogFilePath:         "/home/minecraft/server/logs/latest.log",
+		},
+	}
+
+	// when
+	actual := MergeDefaults(givenConfig)
+
+	// then
+	if !cmp.Equal(actual, expected) {
+		diff := cmp.Diff(actual, expected)
+		t.Errorf("Setting config defaults is incorrect: Diff: %s", diff)
+	}
+}
+
+func TestMigrateNoMinecraftConfig(t *testing.T) {
+	// given
+	expected := RootConfig{
+		DiscordConfig{
+			BotToken:       "",
+			ChannelID:      "",
+			AllowMentions:  true,
+			UseMemberNicks: false,
+			MessageOptions: MessageConfig{
+				ShowAdvancements: true,
+				ShowDeaths:       true,
+				ShowJoinsLeaves:  true,
+			},
+			Webhook: WebhookConfig{
+				Enabled: false,
+				URL:     "",
+			},
+		},
+
+		MinecraftConfig{
+			RconIP:              "localhost",
+			RconPort:            25575,
+			RconPassword:        "",
+			TellrawTemplate:     `[{"color": "white", "text": "<%username%> %message%"}]`,
+			CustomDeathKeywords: &[]string{},
+			UseLogFile:          true,
+			LogFilePath:         "/home/minecraft/server/logs/latest.log",
+		},
+	}
+
+	givenConfig := RootConfig{
+		DiscordConfig{
+			BotToken:       "",
+			ChannelID:      "",
+			AllowMentions:  true,
+			UseMemberNicks: false,
+			MessageOptions: MessageConfig{
+				ShowAdvancements: true,
+				ShowDeaths:       true,
+				ShowJoinsLeaves:  true,
+			},
+			Webhook: WebhookConfig{
+				Enabled: false,
+				URL:     "",
+			}},
+
+		MinecraftConfig{},
+	}
+
+	// when
+	actual := MergeDefaults(givenConfig)
 
 	// then
 	if !cmp.Equal(actual, expected) {

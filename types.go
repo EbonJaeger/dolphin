@@ -23,8 +23,20 @@ type Flags struct {
 	Version bool   `short:"v" long:"version" description:"Print version information and exit"`
 }
 
+// MessageType is the type of Minecraft message that was parsed.
+type MessageType string
+
+// Constant message types
+const (
+	AdvancementMessage MessageType = "Advancement"
+	ChatMessage        MessageType = "Chat"
+	DeathMessage       MessageType = "Death"
+	JoinLeaveMessage   MessageType = "JoinLeave"
+)
+
 // MinecraftMessage represents a message from Minecraft to be sent to Discord.
 type MinecraftMessage struct {
 	Username string
 	Message  string
+	Type     MessageType
 }

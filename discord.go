@@ -91,6 +91,29 @@ func (bot *DiscordBot) WaitForMessages() {
 		// Read message from the channel
 		msg := <-mc
 		Log.Debugf("Received a line from Minecraft: Username='%s', Text='%s'\n", msg.Username, msg.Message)
+
+		// Don't send messages that are disabled
+		switch msg.Type {
+		case AdvancementMessage:
+			{
+				if !Config.Discord.MessageOptions.ShowAdvancements {
+					continue
+				}
+			}
+		case DeathMessage:
+			{
+				if !Config.Discord.MessageOptions.ShowDeaths {
+					continue
+				}
+			}
+		case JoinLeaveMessage:
+			{
+				if !Config.Discord.MessageOptions.ShowJoinsLeaves {
+					continue
+				}
+			}
+		}
+
 		// Send the message to the Discord channel
 		bot.sendToDiscord(msg)
 	}

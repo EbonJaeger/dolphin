@@ -101,21 +101,74 @@ func SaveConfig(data interface{}) error {
 	return writer.Flush()
 }
 
-// SetDefaults sets sane config defaults and returns the resulting config.
-func SetDefaults() RootConfig {
-	return RootConfig{
-		DiscordConfig{
+// MergeDefaults sets sane config defaults and returns the resulting config.
+func MergeDefaults(config RootConfig) RootConfig {
+	// Check if the given config is an empty struct
+	if config == (RootConfig{}) {
+		return RootConfig{
+			DiscordConfig{
+				BotToken:       "",
+				ChannelID:      "",
+				AllowMentions:  true,
+				UseMemberNicks: false,
+				MessageOptions: MessageConfig{
+					ShowAdvancements: true,
+					ShowDeaths:       true,
+					ShowJoinsLeaves:  true,
+				},
+				Webhook: WebhookConfig{
+					Enabled: false,
+					URL:     "",
+				},
+			},
+
+			MinecraftConfig{
+				RconIP:              "localhost",
+				RconPort:            25575,
+				RconPassword:        "",
+				TellrawTemplate:     `[{"color": "white", "text": "<%username%> %message%"}]`,
+				CustomDeathKeywords: &[]string{},
+				UseLogFile:          true,
+				LogFilePath:         "/home/minecraft/server/logs/latest.log",
+			},
+		}
+	}
+
+	if config.Discord == (DiscordConfig{}) {
+		config.Discord = DiscordConfig{
 			BotToken:       "",
 			ChannelID:      "",
 			AllowMentions:  true,
 			UseMemberNicks: false,
+			MessageOptions: MessageConfig{
+				ShowAdvancements: true,
+				ShowDeaths:       true,
+				ShowJoinsLeaves:  true,
+			},
 			Webhook: WebhookConfig{
 				Enabled: false,
 				URL:     "",
 			},
-		},
+		}
+	}
 
-		MinecraftConfig{
+	if config.Discord.MessageOptions == (MessageConfig{}) {
+		config.Discord.MessageOptions = MessageConfig{
+			ShowAdvancements: true,
+			ShowDeaths:       true,
+			ShowJoinsLeaves:  true,
+		}
+	}
+
+	if config.Discord.Webhook == (WebhookConfig{}) {
+		config.Discord.Webhook = WebhookConfig{
+			Enabled: false,
+			URL:     "",
+		}
+	}
+
+	if config.Minecraft == (MinecraftConfig{}) {
+		config.Minecraft = MinecraftConfig{
 			RconIP:              "localhost",
 			RconPort:            25575,
 			RconPassword:        "",
@@ -123,6 +176,8 @@ func SetDefaults() RootConfig {
 			CustomDeathKeywords: &[]string{},
 			UseLogFile:          true,
 			LogFilePath:         "/home/minecraft/server/logs/latest.log",
-		},
+		}
 	}
+
+	return config
 }

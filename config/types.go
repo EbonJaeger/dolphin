@@ -12,7 +12,15 @@ type DiscordConfig struct {
 	ChannelID      string
 	AllowMentions  bool
 	UseMemberNicks bool
+	MessageOptions MessageConfig `toml:"message_options" comment:"Toggle whether certain messages are sent to the Discord channel"`
 	Webhook        WebhookConfig
+}
+
+// MessageConfig holds settings for the messages that should be sent to Discord from Minecraft
+type MessageConfig struct {
+	ShowAdvancements bool `toml:"show_advancements"`
+	ShowDeaths       bool `toml:"show_deaths"`
+	ShowJoinsLeaves  bool `toml:"show_joins_and_leaves"`
 }
 
 // WebhookConfig holds settings for using Discord webhooks to send messages.
