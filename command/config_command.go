@@ -45,9 +45,25 @@ func ParseConfigCommand(state *state.State, cmd DiscordCommand) error {
 			// Let the user know the command was successful
 			return sendSuccessEmbed(state, cmd)
 		}
-	case "channelid":
+	case "channel":
 		{
-			return updateChannel(state, cmd)
+			chanStr := cmd.Args[1]
+
+			// Check if we were given a channel mention or just an ID
+			if strings.HasPrefix(chanStr, "<#") && strings.HasSuffix(chanStr, ">") {
+				endIndex := len(chanStr) - 1
+				chanStr = chanStr[2:endIndex]
+			}
+
+			// Get the channel
+			snowflake, err := discord.ParseSnowflake(chanStr)
+			if err != nil {
+				embed := CreateEmbed(WarnColor, "Unknown Channel", fmt.Sprintf(":warning: `%s` does not seem to be an actual channel or channel ID.", chanStr), "")
+				return SendCommandEmbed(state, cmd, embed)
+			}
+
+			// Update the config
+			return updateChannel(state, cmd, snowflake, chanStr)
 		}
 	case "showadvancements":
 		{
@@ -150,13 +166,12 @@ func sendSuccessEmbed(state *state.State, cmd DiscordCommand) error {
 	return SendCommandEmbed(state, cmd, embed)
 }
 
-func updateChannel(state *state.State, cmd DiscordCommand) error {
+func updateChannel(state *state.State, cmd DiscordCommand, snowflake discord.Snowflake, newChannel string) error {
 	// Get the channel
-	snowflake, _ := discord.ParseSnowflake(cmd.Args[1])
 	channelID := discord.ChannelID(snowflake)
 	channel, err := state.Channel(channelID)
 	if err != nil {
-		embed := CreateEmbed(WarnColor, "Unknown Channel", fmt.Sprintf(":warning: `%s` does not seem to be an actual channel.", cmd.Args[1]), "")
+		embed := CreateEmbed(WarnColor, "Unknown Channel", fmt.Sprintf(":warning: '%s' does not seem to be an actual channel.", newChannel), "")
 		return SendCommandEmbed(state, cmd, embed)
 	}
 
@@ -164,13 +179,13 @@ func updateChannel(state *state.State, cmd DiscordCommand) error {
 	t, _ := state.Message(cmd.ChannelID, cmd.MessageID)
 	guild, _ := state.Guild(t.GuildID)
 	if channel.GuildID != guild.ID {
-		embed := CreateEmbed(WarnColor, "Channel Doesn't Exist", fmt.Sprintf(":warning: No channel with ID `%s` found in this server!", cmd.Args[0]), "See `!help config` for configuration options")
+		embed := CreateEmbed(WarnColor, "Channel Doesn't Exist", fmt.Sprintf(":warning: No channel with ID `%s` found in this server!", newChannel), "See `!help config` for configuration options")
 		return SendCommandEmbed(state, cmd, embed)
 	}
 
 	// Update the config
-	log.Debugf("Updating config property '%s' to '%s'\n", cmd.Args[0], cmd.Args[1])
-	conf.Discord.ChannelID = cmd.Args[1]
+	log.Debugf("Updating config property '%s' to '%s'\n", cmd.Args[0], newChannel)
+	conf.Discord.ChannelID = newChannel
 	if err := config.SaveConfig(conf); err != nil {
 		return err
 	}

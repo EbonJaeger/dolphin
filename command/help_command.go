@@ -43,16 +43,15 @@ func showConfigHelp(state *state.State, cmd DiscordCommand) error {
 	b := strings.Builder{}
 	b.WriteString("Here is a list of all configuration options that can be set via the `!config` command.\n")
 	b.WriteString("The configuration can be updated by entering `!config <option> <value>`.\n")
-	b.WriteString("Bools are `true` or `false`, while `strings` are normal text.\n")
 	b.WriteString("\n")
-	b.WriteString("**Name — Value Type**\n")
+	b.WriteString("**Name — Value**\n")
 
-	b.WriteString("`allowmentions` ** — ** bool\n")
-	b.WriteString("`channelid` ** — ** string\n")
-	b.WriteString("`showadvancements` ** — ** bool\n")
-	b.WriteString("`showdeaths` ** — ** bool\n")
-	b.WriteString("`showjoinleave` ** — ** bool\n")
-	b.WriteString("`usemembernicks` ** — ** bool\n")
+	b.WriteString("`allowmentions` ** — ** true/false\n")
+	b.WriteString("`channel` ** — ** channel id or channel mention\n")
+	b.WriteString("`showadvancements` ** — ** true/false\n")
+	b.WriteString("`showdeaths` ** — ** true/false\n")
+	b.WriteString("`showjoinleave` ** — ** true/false\n")
+	b.WriteString("`usemembernicks` ** — ** true/false\n")
 
 	embed.Description = b.String()
 
